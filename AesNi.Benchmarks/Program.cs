@@ -35,7 +35,7 @@ namespace AesNi.Benchmarks
 
         [Params(PaddingMode.None)] public PaddingMode PaddingMode { get; set; }
 
-        [Params(128 /*, 192, 256*/)] public int KeySize { get; set; }
+        [Params(128, 192, 256)] public int KeySize { get; set; }
 
         [Params(16, 1024, 1024 * 1024)] public int DataSize { get; set; }
 
