@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <OutputType>exe</OutputType>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.11.4" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.4" />
+        <PackageReference Include="JitBuddy" Version="0.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AesNi\AesNi.csproj" />
+    </ItemGroup>
+
+</Project>
