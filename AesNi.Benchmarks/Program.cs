@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
@@ -30,14 +31,19 @@ namespace AesNi.Benchmarks
         private ICryptoTransform frameworkTransform;
         private byte[] input;
         private byte[] output;
+        private byte[] iv;
 
-        [Params(CipherMode.ECB)] public CipherMode CipherMode { get; set; }
+        [Params(CipherMode.ECB, CipherMode.CBC)] 
+        public CipherMode CipherMode { get; set; }
 
-        [Params(PaddingMode.None)] public PaddingMode PaddingMode { get; set; }
+        [Params(PaddingMode.None)] 
+        public PaddingMode PaddingMode { get; set; }
 
-        [Params(128, 192, 256)] public int KeySize { get; set; }
+        [Params(128, 192, 256)] 
+        public int KeySize { get; set; }
 
-        [Params(16, 1024, 1024 * 1024)] public int DataSize { get; set; }
+        [Params(16, 1024, 1024 * 1024)] 
+        public int DataSize { get; set; }
 
         private byte[] KeyBytes
         {
@@ -70,21 +76,28 @@ namespace AesNi.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            aesKey = AesKey;
+            input = new byte[DataSize];
+            output = new byte[DataSize];
+            iv = new byte[16];
+            
+            var r = new Random(42);
+            r.NextBytes(input);
+            r.NextBytes(output);
+            r.NextBytes(iv);
+            
             var aesFw = System.Security.Cryptography.Aes.Create();
             aesFw.Key = KeyBytes;
             aesFw.Mode = CipherMode;
             aesFw.Padding = PaddingMode;
+            aesFw.IV = iv;
             frameworkTransform = aesFw.CreateEncryptor();
-
-            aesKey = AesKey;
-            input = new byte[DataSize];
-            output = new byte[DataSize];
         }
 
         [Benchmark]
         public void AesNi()
         {
-            Aes.Encrypt(input, output, null, aesKey, CipherMode, PaddingMode);
+            Aes.Encrypt(input, output, iv, aesKey, CipherMode, PaddingMode);
         }
 
         [Benchmark(Baseline = true)]
