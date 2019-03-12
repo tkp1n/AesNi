@@ -121,14 +121,6 @@ namespace AesNi
             var key10 = ReadUnalignedOffset(ref expandedKey, Kn * 0);
 
             var feedback0 = ReadUnalignedOffset(ref MemoryMarshal.GetReference(iv), 0);
-            Vector128<byte> feedback1;
-            Vector128<byte> feedback2;
-            Vector128<byte> feedback3;
-            Vector128<byte> feedback4;
-            Vector128<byte> feedback5;
-            Vector128<byte> feedback6;
-            Vector128<byte> feedback7;
-            Vector128<byte> lastIn;
 
             while (left >= BlockSize * 8)
             {
@@ -141,14 +133,14 @@ namespace AesNi
                 var block6 = ReadUnalignedOffset(ref inputRef, position + 6 * BlockSize);
                 var block7 = ReadUnalignedOffset(ref inputRef, position + 7 * BlockSize);
 
-                feedback1 = block0;
-                feedback2 = block1;
-                feedback3 = block2;
-                feedback4 = block3;
-                feedback5 = block4;
-                feedback6 = block5;
-                feedback7 = block6;
-                lastIn = block7;
+                var feedback1 = block0;
+                var feedback2 = block1;
+                var feedback3 = block2;
+                var feedback4 = block3;
+                var feedback5 = block4;
+                var feedback6 = block5;
+                var feedback7 = block6;
+                var lastIn = block7;
 
                 block0 = Xor(block0, key0);
                 block1 = Xor(block1, key0);
@@ -159,95 +151,95 @@ namespace AesNi
                 block6 = Xor(block6, key0);
                 block7 = Xor(block7, key0);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key1);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key1);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key1);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key1);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key1);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key1);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key1);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key1);
+                block0 = AesIntrin.Decrypt(block0, key1);
+                block1 = AesIntrin.Decrypt(block1, key1);
+                block2 = AesIntrin.Decrypt(block2, key1);
+                block3 = AesIntrin.Decrypt(block3, key1);
+                block4 = AesIntrin.Decrypt(block4, key1);
+                block5 = AesIntrin.Decrypt(block5, key1);
+                block6 = AesIntrin.Decrypt(block6, key1);
+                block7 = AesIntrin.Decrypt(block7, key1);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key2);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key2);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key2);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key2);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key2);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key2);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key2);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key2);
+                block0 = AesIntrin.Decrypt(block0, key2);
+                block1 = AesIntrin.Decrypt(block1, key2);
+                block2 = AesIntrin.Decrypt(block2, key2);
+                block3 = AesIntrin.Decrypt(block3, key2);
+                block4 = AesIntrin.Decrypt(block4, key2);
+                block5 = AesIntrin.Decrypt(block5, key2);
+                block6 = AesIntrin.Decrypt(block6, key2);
+                block7 = AesIntrin.Decrypt(block7, key2);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key3);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key3);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key3);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key3);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key3);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key3);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key3);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key3);
+                block0 = AesIntrin.Decrypt(block0, key3);
+                block1 = AesIntrin.Decrypt(block1, key3);
+                block2 = AesIntrin.Decrypt(block2, key3);
+                block3 = AesIntrin.Decrypt(block3, key3);
+                block4 = AesIntrin.Decrypt(block4, key3);
+                block5 = AesIntrin.Decrypt(block5, key3);
+                block6 = AesIntrin.Decrypt(block6, key3);
+                block7 = AesIntrin.Decrypt(block7, key3);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key4);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key4);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key4);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key4);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key4);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key4);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key4);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key4);
+                block0 = AesIntrin.Decrypt(block0, key4);
+                block1 = AesIntrin.Decrypt(block1, key4);
+                block2 = AesIntrin.Decrypt(block2, key4);
+                block3 = AesIntrin.Decrypt(block3, key4);
+                block4 = AesIntrin.Decrypt(block4, key4);
+                block5 = AesIntrin.Decrypt(block5, key4);
+                block6 = AesIntrin.Decrypt(block6, key4);
+                block7 = AesIntrin.Decrypt(block7, key4);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key5);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key5);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key5);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key5);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key5);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key5);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key5);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key5);
+                block0 = AesIntrin.Decrypt(block0, key5);
+                block1 = AesIntrin.Decrypt(block1, key5);
+                block2 = AesIntrin.Decrypt(block2, key5);
+                block3 = AesIntrin.Decrypt(block3, key5);
+                block4 = AesIntrin.Decrypt(block4, key5);
+                block5 = AesIntrin.Decrypt(block5, key5);
+                block6 = AesIntrin.Decrypt(block6, key5);
+                block7 = AesIntrin.Decrypt(block7, key5);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key6);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key6);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key6);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key6);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key6);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key6);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key6);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key6);
+                block0 = AesIntrin.Decrypt(block0, key6);
+                block1 = AesIntrin.Decrypt(block1, key6);
+                block2 = AesIntrin.Decrypt(block2, key6);
+                block3 = AesIntrin.Decrypt(block3, key6);
+                block4 = AesIntrin.Decrypt(block4, key6);
+                block5 = AesIntrin.Decrypt(block5, key6);
+                block6 = AesIntrin.Decrypt(block6, key6);
+                block7 = AesIntrin.Decrypt(block7, key6);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key7);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key7);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key7);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key7);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key7);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key7);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key7);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key7);
+                block0 = AesIntrin.Decrypt(block0, key7);
+                block1 = AesIntrin.Decrypt(block1, key7);
+                block2 = AesIntrin.Decrypt(block2, key7);
+                block3 = AesIntrin.Decrypt(block3, key7);
+                block4 = AesIntrin.Decrypt(block4, key7);
+                block5 = AesIntrin.Decrypt(block5, key7);
+                block6 = AesIntrin.Decrypt(block6, key7);
+                block7 = AesIntrin.Decrypt(block7, key7);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key8);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key8);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key8);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key8);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key8);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key8);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key8);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key8);
+                block0 = AesIntrin.Decrypt(block0, key8);
+                block1 = AesIntrin.Decrypt(block1, key8);
+                block2 = AesIntrin.Decrypt(block2, key8);
+                block3 = AesIntrin.Decrypt(block3, key8);
+                block4 = AesIntrin.Decrypt(block4, key8);
+                block5 = AesIntrin.Decrypt(block5, key8);
+                block6 = AesIntrin.Decrypt(block6, key8);
+                block7 = AesIntrin.Decrypt(block7, key8);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block0, key9);
-                block1 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block1, key9);
-                block2 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block2, key9);
-                block3 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block3, key9);
-                block4 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block4, key9);
-                block5 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block5, key9);
-                block6 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block6, key9);
-                block7 = System.Runtime.Intrinsics.X86.Aes.Decrypt(block7, key9);
+                block0 = AesIntrin.Decrypt(block0, key9);
+                block1 = AesIntrin.Decrypt(block1, key9);
+                block2 = AesIntrin.Decrypt(block2, key9);
+                block3 = AesIntrin.Decrypt(block3, key9);
+                block4 = AesIntrin.Decrypt(block4, key9);
+                block5 = AesIntrin.Decrypt(block5, key9);
+                block6 = AesIntrin.Decrypt(block6, key9);
+                block7 = AesIntrin.Decrypt(block7, key9);
 
-                block0 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block0, key10);
-                block1 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block1, key10);
-                block2 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block2, key10);
-                block3 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block3, key10);
-                block4 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block4, key10);
-                block5 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block5, key10);
-                block6 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block6, key10);
-                block7 = System.Runtime.Intrinsics.X86.Aes.DecryptLast(block7, key10);
+                block0 = AesIntrin.DecryptLast(block0, key10);
+                block1 = AesIntrin.DecryptLast(block1, key10);
+                block2 = AesIntrin.DecryptLast(block2, key10);
+                block3 = AesIntrin.DecryptLast(block3, key10);
+                block4 = AesIntrin.DecryptLast(block4, key10);
+                block5 = AesIntrin.DecryptLast(block5, key10);
+                block6 = AesIntrin.DecryptLast(block6, key10);
+                block7 = AesIntrin.DecryptLast(block7, key10);
 
                 block0 = Xor(block0, feedback0);
                 block1 = Xor(block1, feedback1);
@@ -276,19 +268,19 @@ namespace AesNi
             while (left >= BlockSize)
             {
                 var block = ReadUnalignedOffset(ref inputRef, position);
-                lastIn = block;
+                var lastIn = block;
                 var data = Xor(block, key0);
 
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key1);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key2);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key3);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key4);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key5);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key6);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key7);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key8);
-                data = System.Runtime.Intrinsics.X86.Aes.Decrypt(data, key9);
-                data = System.Runtime.Intrinsics.X86.Aes.DecryptLast(data, key10);
+                data = AesIntrin.Decrypt(data, key1);
+                data = AesIntrin.Decrypt(data, key2);
+                data = AesIntrin.Decrypt(data, key3);
+                data = AesIntrin.Decrypt(data, key4);
+                data = AesIntrin.Decrypt(data, key5);
+                data = AesIntrin.Decrypt(data, key6);
+                data = AesIntrin.Decrypt(data, key7);
+                data = AesIntrin.Decrypt(data, key8);
+                data = AesIntrin.Decrypt(data, key9);
+                data = AesIntrin.DecryptLast(data, key10);
 
                 data = Xor(data, feedback0);
 
