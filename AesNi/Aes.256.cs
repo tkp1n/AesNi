@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using static AesNi.Utils;
 using static System.Runtime.Intrinsics.X86.Sse2;
 using AesIntrin = System.Runtime.Intrinsics.X86.Aes;
@@ -10,7 +12,11 @@ namespace AesNi
     // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf 
     public static partial class Aes
     {
-        public static void EncryptEcb(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext, Aes256Key key)
+        public static void EncryptEcb(
+            ReadOnlySpan<byte> plaintext,
+            Span<byte> ciphertext,
+            Aes256Key key,
+            PaddingMode paddingMode = PaddingMode.Zeros)
         {
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(plaintext);
@@ -234,13 +240,46 @@ namespace AesNi
                 position += BlockSize;
                 left -= BlockSize;
             }
+
+            if (paddingMode == PaddingMode.None)
+            {
+                Debug.Assert(left == 0);
+                return;
+            }
+
+            Span<byte> lastBlock = stackalloc byte[BlockSize];
+            var remainingPlaintext =
+                left != 0 ? plaintext.Slice(plaintext.Length - left) : ReadOnlySpan<byte>.Empty;
+
+            ApplyPadding(remainingPlaintext, lastBlock, paddingMode);
+
+            var lBlock = ReadUnalignedOffset(ref MemoryMarshal.GetReference(lastBlock), 0);
+
+            lBlock = Xor(lBlock, key0);
+            lBlock = AesIntrin.Encrypt(lBlock, key1);
+            lBlock = AesIntrin.Encrypt(lBlock, key2);
+            lBlock = AesIntrin.Encrypt(lBlock, key3);
+            lBlock = AesIntrin.Encrypt(lBlock, key4);
+            lBlock = AesIntrin.Encrypt(lBlock, key5);
+            lBlock = AesIntrin.Encrypt(lBlock, key6);
+            lBlock = AesIntrin.Encrypt(lBlock, key7);
+            lBlock = AesIntrin.Encrypt(lBlock, key8);
+            lBlock = AesIntrin.Encrypt(lBlock, key9);
+            lBlock = AesIntrin.Encrypt(lBlock, key10);
+            lBlock = AesIntrin.Encrypt(lBlock, key11);
+            lBlock = AesIntrin.Encrypt(lBlock, key12);
+            lBlock = AesIntrin.Encrypt(lBlock, key13);
+            lBlock = AesIntrin.EncryptLast(lBlock, key14);
+
+            WriteUnalignedOffset(ref outputRef, position, lBlock);
         }
-        
+
         public static void EncryptCbc(
-            ReadOnlySpan<byte> plaintext, 
-            Span<byte> ciphertext, 
+            ReadOnlySpan<byte> plaintext,
+            Span<byte> ciphertext,
             ReadOnlySpan<byte> iv,
-            Aes256Key key)
+            Aes256Key key,
+            PaddingMode paddingMode = PaddingMode.Zeros)
         {
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(plaintext);
@@ -290,10 +329,44 @@ namespace AesNi
                 feedback = AesIntrin.EncryptLast(feedback, key14);
 
                 WriteUnalignedOffset(ref outputRef, position, feedback);
-                
+
                 position += BlockSize;
                 left -= BlockSize;
             }
+
+            if (paddingMode == PaddingMode.None)
+            {
+                Debug.Assert(left == 0);
+                return;
+            }
+
+            Span<byte> lastBlock = stackalloc byte[BlockSize];
+            var remainingPlaintext =
+                left != 0 ? plaintext.Slice(plaintext.Length - left) : ReadOnlySpan<byte>.Empty;
+
+            ApplyPadding(remainingPlaintext, lastBlock, paddingMode);
+
+            var lBlock = ReadUnalignedOffset(ref MemoryMarshal.GetReference(lastBlock), 0);
+
+            feedback = Xor(lBlock, feedback);
+            feedback = Xor(feedback, key0);
+
+            feedback = AesIntrin.Encrypt(feedback, key1);
+            feedback = AesIntrin.Encrypt(feedback, key2);
+            feedback = AesIntrin.Encrypt(feedback, key3);
+            feedback = AesIntrin.Encrypt(feedback, key4);
+            feedback = AesIntrin.Encrypt(feedback, key5);
+            feedback = AesIntrin.Encrypt(feedback, key6);
+            feedback = AesIntrin.Encrypt(feedback, key7);
+            feedback = AesIntrin.Encrypt(feedback, key8);
+            feedback = AesIntrin.Encrypt(feedback, key9);
+            feedback = AesIntrin.Encrypt(feedback, key10);
+            feedback = AesIntrin.Encrypt(feedback, key11);
+            feedback = AesIntrin.Encrypt(feedback, key12);
+            feedback = AesIntrin.Encrypt(feedback, key13);
+            feedback = AesIntrin.EncryptLast(feedback, key14);
+
+            WriteUnalignedOffset(ref outputRef, position, feedback);
         }
 
         public static void DecryptEcb(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext, Aes256Key key)
@@ -521,10 +594,10 @@ namespace AesNi
                 left -= BlockSize;
             }
         }
-        
+
         public static void DecryptCbc(
-            ReadOnlySpan<byte> ciphertext, 
-            Span<byte> plaintext, 
+            ReadOnlySpan<byte> ciphertext,
+            Span<byte> plaintext,
             ReadOnlySpan<byte> iv,
             Aes256Key key)
         {
@@ -574,11 +647,11 @@ namespace AesNi
                 data = AesIntrin.DecryptLast(data, key14);
 
                 data = Xor(data, feedback);
-                
+
                 WriteUnalignedOffset(ref outputRef, position, data);
 
                 feedback = block;
-                
+
                 position += BlockSize;
                 left -= BlockSize;
             }

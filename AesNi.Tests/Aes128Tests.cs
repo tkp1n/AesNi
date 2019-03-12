@@ -1,29 +1,30 @@
 using System;
+using System.IO;
 using System.Security.Cryptography;
-using Microsoft.VisualStudio.TestPlatform.Common.Interfaces;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AesNi.Tests
 {
     public class Aes128Tests
     {
-        // TODO: test against NIST test vectors
+        // TODO: test all padding modes
         private const int DataSize = 1040;
 
         [Fact]
         public void ReferenceTest()
         {
             var r = new Random(42);
-            var bytes = new byte[DataSize];
+            var bytes = new byte[DataSize + 2];
             var key = new byte[16];
             r.NextBytes(bytes);
             r.NextBytes(key);
 
-            var managed = new AesManaged {Key = key, Mode = CipherMode.ECB, Padding = PaddingMode.None};
+            var managed = new AesManaged {Key = key, Mode = CipherMode.ECB, Padding = PaddingMode.Zeros};
             var managedResult = managed.CreateEncryptor().TransformFinalBlock(bytes, 0, bytes.Length);
 
-            var niResult = new byte[DataSize];
-            Aes.EncryptEcb(bytes, niResult, new Aes128Key(key));
+            var niResult = new byte[DataSize + 16];
+            Aes.Encrypt(bytes, niResult, null, new Aes128Key(key), CipherMode.ECB, PaddingMode.Zeros);
 
             Assert.Equal(managedResult, niResult);
         }
@@ -47,7 +48,7 @@ namespace AesNi.Tests
 
             Assert.Equal(managedResult, niResult);
         }
-        
+
         [Fact]
         public void SelfTest()
         {
@@ -65,8 +66,8 @@ namespace AesNi.Tests
             Aes.DecryptEcb(cipher, plainAgain, k);
 
             Assert.Equal(plain, plainAgain);
-        } 
-        
+        }
+
         [Fact]
         public void SelfTestCbc()
         {

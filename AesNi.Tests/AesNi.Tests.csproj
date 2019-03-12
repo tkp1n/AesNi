@@ -17,4 +17,10 @@
       <ProjectReference Include="..\AesNi\AesNi.csproj" />
     </ItemGroup>
 
+    <ItemGroup>    
+        <Content Include="KAT\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
 </Project>

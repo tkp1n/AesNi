@@ -6,7 +6,7 @@ namespace AesNi.Tests
 {
     public class Aes192Tests
     {
-        // TODO: test against NIST test vectors
+        // TODO: test all padding modes
         private const int DataSize = 1040;
 
         [Fact]
@@ -65,7 +65,7 @@ namespace AesNi.Tests
 
             Assert.Equal(plain, plainAgain);
         }
-        
+
         [Fact]
         public void SelfTestCbc()
         {
