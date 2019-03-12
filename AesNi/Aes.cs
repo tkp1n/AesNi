@@ -89,6 +89,8 @@ namespace AesNi
                 ThrowHelper.ThrowNotImplementedException();
             if (cipherMode == CipherMode.CBC && iv == null)
                 ThrowHelper.ThrowArgumentNullException(nameof(iv));
+            if (paddingMode != PaddingMode.None) 
+                ThrowHelper.ThrowPaddingNotSupportedException(paddingMode);
             // TODO: correctly validate plaintext length
             if (plaintext.Length < ciphertext.Length)
                 ThrowHelper.ThrowDestinationBufferTooSmallException(nameof(plaintext));
