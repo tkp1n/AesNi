@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace AesNi.Tests
 {

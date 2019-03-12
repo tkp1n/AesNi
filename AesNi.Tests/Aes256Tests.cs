@@ -22,7 +22,7 @@ namespace AesNi.Tests
             var managedResult = managed.CreateEncryptor().TransformFinalBlock(bytes, 0, bytes.Length);
 
             var niResult = new byte[DataSize];
-            Aes.EncryptEcb(bytes, niResult, new Aes256Key(key));
+            Aes.EncryptEcb(bytes, niResult, new Aes256Key(key), PaddingMode.None);
 
             Assert.Equal(managedResult, niResult);
         }
@@ -42,7 +42,7 @@ namespace AesNi.Tests
             var managedResult = managed.CreateEncryptor().TransformFinalBlock(bytes, 0, bytes.Length);
 
             var niResult = new byte[DataSize];
-            Aes.EncryptCbc(bytes, niResult, iv, new Aes256Key(key));
+            Aes.EncryptCbc(bytes, niResult, iv, new Aes256Key(key), PaddingMode.None);
 
             Assert.Equal(managedResult, niResult);
         }
@@ -60,8 +60,8 @@ namespace AesNi.Tests
             var plainAgain = new byte[DataSize];
             var k = new Aes256Key(key);
 
-            Aes.EncryptEcb(plain, cipher, k);
-            Aes.DecryptEcb(cipher, plainAgain, k);
+            Aes.EncryptEcb(plain, cipher, k, PaddingMode.None);
+            Aes.DecryptEcb(cipher, plainAgain, k, PaddingMode.None);
 
             Assert.Equal(plain, plainAgain);
         }
@@ -81,8 +81,8 @@ namespace AesNi.Tests
             var plainAgain = new byte[DataSize];
             var k = new Aes256Key(key);
 
-            Aes.EncryptCbc(plain, cipher, iv, k);
-            Aes.DecryptCbc(cipher, plainAgain, iv, k);
+            Aes.EncryptCbc(plain, cipher, iv, k, PaddingMode.None);
+            Aes.DecryptCbc(cipher, plainAgain, iv, k, PaddingMode.None);
 
             Assert.Equal(plain, plainAgain);
         }

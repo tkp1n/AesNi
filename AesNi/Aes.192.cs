@@ -335,7 +335,11 @@ namespace AesNi
             WriteUnalignedOffset(ref outputRef, position, feedback);
         }
 
-        public static void DecryptEcb(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext, Aes192Key key)
+        public static void DecryptEcb(
+            ReadOnlySpan<byte> ciphertext,
+            Span<byte> plaintext,
+            Aes192Key key,
+            PaddingMode paddingMode = PaddingMode.Zeros)
         {
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
@@ -541,7 +545,8 @@ namespace AesNi
             ReadOnlySpan<byte> ciphertext,
             Span<byte> plaintext,
             ReadOnlySpan<byte> iv,
-            Aes192Key key)
+            Aes192Key key,
+            PaddingMode paddingMode = PaddingMode.Zeros)
         {
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
