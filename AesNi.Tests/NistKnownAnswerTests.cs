@@ -29,6 +29,12 @@ namespace AesNi.Tests
                         testSet = new TestSet();
                         testSet.Name = Path.GetFileName(file).Split(".")[0];
                         testSet.Mode = Enum.Parse<CipherMode>(testSet.Name.Substring(0, 3));
+                        if (testSet.Mode == CipherMode.CFB)
+                        {
+                            if (testSet.Name.StartsWith("CFB128")) testSet.FeedbackSize = 128;
+                            else if (testSet.Name.StartsWith("CFB8")) testSet.FeedbackSize = 8;
+                            else if (testSet.Name.StartsWith("CFB1")) testSet.FeedbackSize = 1;
+                        }
                         testSet.Encrypt = encrypt;
                         testSet.Count = int.Parse(line.Split(" = ")[1]);
                     }
@@ -69,6 +75,7 @@ namespace AesNi.Tests
             public bool Encrypt { get; set; }
             public int Count { get; set; }
             public CipherMode Mode { get; set; }
+            public int FeedbackSize { get; set; }
             public byte[] Key { get; set; }
             public byte[] Iv { get; set; }
             public byte[] Plaintext { get; set; }
