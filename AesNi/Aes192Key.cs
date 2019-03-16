@@ -8,6 +8,8 @@ using static System.Runtime.Intrinsics.X86.Sse2;
 
 namespace AesNi
 {
+    // TODO: Consider using seperate key classes for algorithms using AES only in the encrypt direction to avoid 
+    // TODO: generating and storing the second half (inverse) of the key schedule
     public class Aes192Key : AesKey
     {
         private const int Nb = 4;
