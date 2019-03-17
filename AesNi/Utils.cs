@@ -14,6 +14,12 @@ namespace AesNi
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Vector128<byte> ReadUnaligned(ref byte source)
+        {
+            return Unsafe.ReadUnaligned<Vector128<byte>>(ref source);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Vector128<byte> ReadUnalignedOffset(ref int source, int offset)
         {
             return Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref source, offset)));
@@ -23,6 +29,12 @@ namespace AesNi
         internal static Vector128<byte> ReadUnalignedOffset(ref byte source, int offset)
         {
             return Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.AddByteOffset(ref source, (IntPtr) offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void WriteUnaligned(ref byte target, Vector128<byte> value)
+        {
+            Unsafe.WriteUnaligned(ref target, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

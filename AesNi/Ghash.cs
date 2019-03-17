@@ -75,7 +75,7 @@ namespace AesNi
         /// <returns></returns>
         public static Vector128<ulong> Gfmul24(Vector128<ulong> a, Vector128<ulong> b)
         {
-            Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9, tmp10, tmp11, tmp12;
+            Vector128<ulong> tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9, tmp10, tmp11, tmp12;
             Vector128<ulong> mask = Vector128.Create(0xffffffff, 0x0, 0x0, 0x0).AsUInt64();
 
             tmp3 = CarrylessMultiply(a, b, 0x00);

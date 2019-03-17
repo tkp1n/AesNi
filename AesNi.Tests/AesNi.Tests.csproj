@@ -17,8 +17,11 @@
       <ProjectReference Include="..\AesNi\AesNi.csproj" />
     </ItemGroup>
 
-    <ItemGroup>    
+    <ItemGroup>
         <Content Include="KAT\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="GCMTestVectors\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
