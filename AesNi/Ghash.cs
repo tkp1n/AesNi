@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using static System.Runtime.Intrinsics.X86.Pclmulqdq;
 using static System.Runtime.Intrinsics.X86.Sse2;
@@ -11,13 +12,9 @@ namespace AesNi
     internal static class Ghash
     {
         /// <summary>
-        /// https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
         /// Figure 5. Code Sample - Performing Ghash Using Algorithms 1 and 5 (C)
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Vector128<ulong> Gfmul15(Vector128<ulong> a, Vector128<ulong> b)
+        public static Vector128<ulong> Gfmul(Vector128<ulong> a, Vector128<ulong> b)
         {
             Vector128<ulong> tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9;
 
@@ -66,17 +63,17 @@ namespace AesNi
             return tmp6;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<byte> Gfmul(Vector128<byte> a, Vector128<byte> b)
+            => Gfmul(a.AsUInt64(), b.AsUInt64()).AsByte();
+
         /// <summary>
-        /// https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
         /// Figure 7. Code Sample - Performing Ghash Using Algorithms 2 and 4 with Reflected Input and Output
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static Vector128<ulong> Gfmul24(Vector128<ulong> a, Vector128<ulong> b)
+        public static Vector128<ulong> GfmulReflected(Vector128<ulong> a, Vector128<ulong> b)
         {
             Vector128<ulong> tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9, tmp10, tmp11, tmp12;
-            Vector128<ulong> mask = Vector128.Create(0xffffffff, 0x0, 0x0, 0x0).AsUInt64();
+            Vector128<ulong> mask = Vector128.Create(0x0, 0x0, 0x0, 0xffffffff).AsUInt64();
 
             tmp3 = CarrylessMultiply(a, b, 0x00);
             tmp6 = CarrylessMultiply(a, b, 0x11);
@@ -91,7 +88,7 @@ namespace AesNi
             tmp4 = Xor(tmp4, tmp6);
 
             tmp5 = ShiftLeftLogical128BitLane(tmp4, 8);
-            tmp4 = ShiftLeftLogical128BitLane(tmp4, 8);
+            tmp4 = ShiftRightLogical128BitLane(tmp4, 8);
             tmp3 = Xor(tmp3, tmp5);
             tmp6 = Xor(tmp6, tmp4);
 
@@ -102,7 +99,7 @@ namespace AesNi
             tmp7 = Xor(tmp7, tmp8);
             tmp7 = Xor(tmp7, tmp9);
 
-            tmp8 = Shuffle(tmp7.AsUInt32(), 148).AsUInt64();
+            tmp8 = Shuffle(tmp7.AsUInt32(), 147).AsUInt64();
 
             tmp7 = And(mask, tmp8);
             tmp8 = AndNot(mask, tmp8);
@@ -123,15 +120,6 @@ namespace AesNi
         /// Figure 8. Code Sample -Performing GhashUsing an Aggregated Reduction Method
         /// Algorithm by Krzysztof Jankowski,  Pierre Laurent - Intel
         /// </summary>
-        /// <param name="h1"></param>
-        /// <param name="h2"></param>
-        /// <param name="h3"></param>
-        /// <param name="h4"></param>
-        /// <param name="x1"></param>
-        /// <param name="x2"></param>
-        /// <param name="x3"></param>
-        /// <param name="x4"></param>
-        /// <returns></returns>
         public static Vector128<ulong> Reduce4(
             Vector128<ulong> h1, Vector128<ulong> h2, Vector128<ulong> h3, Vector128<ulong> h4,
             Vector128<ulong> x1, Vector128<ulong> x2, Vector128<ulong> x3, Vector128<ulong> x4)
@@ -219,17 +207,24 @@ namespace AesNi
             tmp8 = ShiftRightLogical128BitLane(tmp7, 4);
             tmp7 = ShiftLeftLogical128BitLane(tmp7, 12);
             tmp3 = Xor(tmp3, tmp7);
-            
+
             tmp2 = ShiftRightLogical(tmp3, 1);
             tmp4 = ShiftRightLogical(tmp3, 2);
             tmp5 = ShiftRightLogical(tmp3, 7);
             tmp2 = Xor(tmp2, tmp4);
-            tmp2 = Xor(tmp2,tmp5);
+            tmp2 = Xor(tmp2, tmp5);
             tmp2 = Xor(tmp2, tmp8);
             tmp3 = Xor(tmp3, tmp2);
             tmp6 = Xor(tmp6, tmp3);
 
             return tmp6;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<byte> Reduce4(
+            Vector128<byte> h1, Vector128<byte> h2, Vector128<byte> h3, Vector128<byte> h4,
+            Vector128<byte> x1, Vector128<byte> x2, Vector128<byte> x3, Vector128<byte> x4) =>
+            Reduce4(h1.AsUInt64(), h2.AsUInt64(), h3.AsUInt64(), h4.AsUInt64(),
+                    x1.AsUInt64(), x2.AsUInt64(), x3.AsUInt64(), x4.AsUInt64()).AsByte();
     }
 }
