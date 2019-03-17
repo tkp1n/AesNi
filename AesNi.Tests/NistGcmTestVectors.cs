@@ -10,7 +10,7 @@ namespace AesNi.Tests
         public static IEnumerable<object[]> GetTestVectors()
         {
             var files = Directory.EnumerateFiles(Path.Combine(Directory.GetCurrentDirectory(), "GCMTestVectors"), "*.rsp");
-            foreach (var file in files.Where(x => Path.GetFileName(x).Contains("Encrypt") || Path.GetFileName(x).StartsWith("128"))) // TODO: enable all modes
+            foreach (var file in files.Where(x => Path.GetFileName(x).Contains("Encrypt") && Path.GetFileName(x).Contains("128"))) // TODO: enable all modes
             {
                 TestSet testSet = null;
                 foreach (var line in File.ReadLines(file))
