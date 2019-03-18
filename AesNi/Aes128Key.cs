@@ -9,16 +9,15 @@ using static System.Runtime.Intrinsics.X86.Sse2;
 namespace AesNi
 {
     // TODO: Consider using seperate key classes for algorithms using AES only in the encrypt direction to avoid 
-    // TODO: generating and storing the second half (inverse) of the key schedule
     public sealed class Aes128Key : AesKey
     {
         private const int Nb = 4;
-        private const int Nk = 4; // 192->6, 256->8
-        private const int Nr = 10; // 192->12, 256->14
+        private const int Nk = 4;
+        private const int Nr = 10;
 
         // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec 
         // inspiration drawn from https://github.com/sebastien-riou/aes-brute-force/blob/master/include/aes_ni.h
-        private readonly int[] _expandedKey = new int[Nb * (Nr + Nr + 1)];
+        private readonly int[] _expandedKey = new int[2 * Nb * Nr];
 
         // TODO: validation
         public Aes128Key(ReadOnlySpan<byte> key)
