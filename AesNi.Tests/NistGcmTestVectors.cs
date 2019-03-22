@@ -9,23 +9,24 @@ namespace AesNi.Tests
     {
         public static IEnumerable<object[]> GetTestVectors()
         {
-            var files = Directory.EnumerateFiles(Path.Combine(Directory.GetCurrentDirectory(), "GCMTestVectors"), "*.rsp");
-            foreach (var file in files.Where(x => Path.GetFileName(x).Contains("Encrypt"))) // TODO: enable all modes
+            foreach (var file in Directory.EnumerateFiles(Path.Combine(Directory.GetCurrentDirectory(), "GCMTestVectors"), "*.rsp"))
             {
+                var encrypt = Path.GetFileName(file).Contains("Encrypt");
                 TestSet testSet = null;
                 foreach (var line in File.ReadLines(file))
                 {
                     if (line.StartsWith("#")) continue;
-                    var encrypt = Path.GetFileName(file).Contains("Encrypt");
-
                     if (line.StartsWith("Count"))
                     {
                         if (testSet != null) yield return new object[] {testSet};
 
-                        testSet = new TestSet();
-                        testSet.Name = Path.GetFileName(file).Split(".")[0];
-                        testSet.Encrypt = encrypt;
-                        testSet.Count = int.Parse(line.Split(" = ")[1]);
+                        testSet = new TestSet
+                        {
+                            Name = Path.GetFileName(file).Split(".")[0],
+                            Encrypt = encrypt,
+                            Pass = true,
+                            Count = int.Parse(line.Split(" = ")[1])
+                        };
                     }
 
                     if (line.StartsWith("Key")) testSet.Key = line.Split(" = ")[1].ToByteArray();
@@ -34,6 +35,7 @@ namespace AesNi.Tests
                     if (line.StartsWith("AAD")) testSet.Aad = line.Split(" = ")[1].ToByteArray();
                     if (line.StartsWith("CT")) testSet.Ciphertext = line.Split(" = ")[1].ToByteArray();
                     if (line.StartsWith("Tag")) testSet.Tag = line.Split(" = ")[1].ToByteArray();
+                    if (line.StartsWith("FAIL")) testSet.Pass = false;
                 }
 
                 if (testSet != null) yield return new object[] {testSet};
@@ -46,11 +48,23 @@ namespace AesNi.Tests
         {
             if (testSet.Encrypt)
             {
-                var acutalCt = new byte[testSet.Ciphertext.Length];
-                var acutalTag = new byte[testSet.Tag.Length];
-                Aes.Encrypt(testSet.Plaintext, acutalCt, testSet.Iv, testSet.Aad, acutalTag, AesKey.Create(testSet.Key));
-                Assert.Equal(testSet.Ciphertext, acutalCt);
-                Assert.Equal(testSet.Tag, acutalTag);
+                var actualCt = new byte[testSet.Ciphertext?.Length ?? 0];
+                var actualTag = new byte[testSet.Tag.Length];
+                Aes.Encrypt(testSet.Plaintext, actualCt, testSet.Iv, testSet.Aad, actualTag, AesKey.Create(testSet.Key));
+                Assert.Equal(testSet.Ciphertext, actualCt);
+                Assert.Equal(testSet.Tag, actualTag);
+            }
+            else
+            {
+                var actualPt = new byte[testSet.Plaintext?.Length ?? 0];
+                
+                var result = Aes.Decrypt(testSet.Ciphertext, actualPt, testSet.Iv, testSet.Aad, testSet.Tag, AesKey.Create(testSet.Key));
+                
+                Assert.Equal(testSet.Pass, result);
+                if (result)
+                {
+                    Assert.Equal(testSet.Plaintext, actualPt);                    
+                }
             }
         }
         
@@ -65,6 +79,7 @@ namespace AesNi.Tests
             public byte[] Ciphertext { get; set; }
             public byte[] Aad { get; set; }
             public byte[] Tag { get; set; }
+            public bool Pass { get; set; }
             
             public override string ToString()
             {

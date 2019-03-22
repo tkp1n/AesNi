@@ -195,6 +195,35 @@ namespace AesNi
             }
         }
 
+        public static bool Decrypt(ReadOnlySpan<byte> ciphertext,
+            Span<byte> plaintext,
+            ReadOnlySpan<byte> iv,
+            ReadOnlySpan<byte> aad,
+            ReadOnlySpan<byte> tag,
+            AesKey key,
+            PaddingMode paddingMode = PaddingMode.PKCS7)
+        {
+            if (paddingMode == PaddingMode.None && plaintext.Length % BlockSize != 0)
+                ThrowHelper.ThrowInputNotMultipleOfBlockSizeException(nameof(plaintext));
+            // TODO: correctly validate ciphertext length
+            if (ciphertext.Length < plaintext.Length)
+                ThrowHelper.ThrowDestinationBufferTooSmallException(nameof(ciphertext));
+            // TODO: moar validation
+
+            switch (key)
+            {
+                case Aes128Key aes128Key:
+                    return DecryptGcm(ciphertext, plaintext, aad, iv, tag, aes128Key);
+                case Aes192Key aes192Key:
+                    return DecryptGcm(ciphertext, plaintext, aad, iv, tag, aes192Key);
+                case Aes256Key aes256Key:
+                    return DecryptGcm(ciphertext, plaintext, aad, iv, tag, aes256Key);
+            }
+
+            ThrowHelper.ThrowNotImplementedException();
+            return false;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ApplyPadding(ReadOnlySpan<byte> remainingBytes, Span<byte> lastBlock,
             PaddingMode paddingMode)

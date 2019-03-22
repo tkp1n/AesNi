@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using static System.Runtime.Intrinsics.X86.Sse2;
 
 namespace AesNi
 {
@@ -54,5 +55,9 @@ namespace AesNi
         {
             Unsafe.WriteUnaligned(ref Unsafe.As<int, byte>(ref Unsafe.Add(ref target, offset)), vec);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool Equal(Vector128<byte> a, Vector128<byte> b)
+            => MoveMask(CompareEqual(a, b)) == 0xffff;
     }
 }
