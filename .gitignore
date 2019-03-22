@@ -4,3 +4,4 @@ obj/
 .vs/
 BenchmarkDotNet.Artifacts/
 *.user
+DisasmoBin/

@@ -19,7 +19,7 @@ namespace AesNi
         private static readonly Vector128<byte> Four = Vector128.Create(0, 0, 4, 0).AsByte();
         private static readonly Vector128<byte> BswapEpi64
             = Vector128.Create((byte)7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
-        private static readonly Vector128<byte> BswapMask 
+        private static readonly Vector128<byte> BswapMask
             = Vector128.Create((byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
         public static void EncryptGcm(
@@ -30,7 +30,7 @@ namespace AesNi
             Span<byte> tag,
             Aes128Key key)
         {
-            int left, position = 0;
+            int i, j, k;
             Vector128<byte> tmp1, tmp2, tmp3, tmp4;
             Vector128<byte> h, h2, h3, h4, t;
             Vector128<byte> ctr1, ctr2, ctr3, ctr4;
@@ -39,7 +39,7 @@ namespace AesNi
             Vector128<byte> bswapEpi64 = BswapEpi64;
             Vector128<byte> bswapMask = BswapMask;
             Vector128<byte> x = Vector128<byte>.Zero;
-            Vector128<byte> y = Vector128<byte>.Zero;
+            Vector128<byte> y;
             Span<byte> lastBlock = stackalloc byte[BlockSize];
 
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
@@ -66,7 +66,7 @@ namespace AesNi
             {
                 y = ReadUnaligned(ref ivRef);
                 y = Insert(y.AsUInt32(), 0x1000000, 3).AsByte();
-
+                /*(Compute E[ZERO, KS] and E[Y0, KS] together*/
                 tmp1 = Xor(x, key0);
                 tmp2 = Xor(y, key0);
 
@@ -115,38 +115,37 @@ namespace AesNi
                 tmp1 = Encrypt(tmp1, key8);
                 tmp1 = Encrypt(tmp1, key9);
                 h = EncryptLast(tmp1, key10);
-                h = Shuffle(h, bswapMask);
 
-                left = iv.Length;
-                while (left >= BlockSize)
+                h = Shuffle(h, bswapMask);
+                y = Vector128<byte>.Zero;
+
+                for (i = 0; i < iv.Length / 16; i++)
                 {
-                    tmp1 = ReadUnalignedOffset(ref ivRef, position);
+                    tmp1 = ReadUnalignedOffset(ref ivRef, i * 16);
                     tmp1 = Shuffle(tmp1, bswapMask);
                     y = Xor(y, tmp1);
                     y = Ghash.Gfmul(y, h);
-
-                    position += BlockSize;
-                    left -= BlockSize;
                 }
 
-                if (left > 0)
+                if (iv.Length % 16 != 0)
                 {
-                    lastBlock.Clear();
-                    iv.Slice(position).CopyTo(lastBlock);
+                    for (j = 0; j < iv.Length % 16; j++)
+                    {
+                        lastBlock[j] = iv[i * 16 + j];
+                    }
+
                     tmp1 = ReadUnaligned(ref lastBlockRef);
                     tmp1 = Shuffle(tmp1, bswapMask);
                     y = Xor(y, tmp1);
                     y = Ghash.Gfmul(y, h);
                 }
 
-                tmp1 = Insert(tmp1.AsInt64(), iv.Length * 8, 0).AsByte();
-                tmp1 = Insert(tmp1.AsInt64(), 0, 1).AsByte();
+                tmp1 = Insert(tmp1.AsUInt64(), (ulong)iv.Length * 8, 0).AsByte();
+                tmp1 = Insert(tmp1.AsUInt64(), 0, 1).AsByte();
 
                 y = Xor(y, tmp1);
                 y = Ghash.Gfmul(y, h);
-                y = Shuffle(y, bswapMask);
-
-                /*Compute E(K, Y0)*/
+                y = Shuffle(y, bswapMask); /*Compute E(K, Y0)*/
                 tmp1 = Xor(y, key0);
                 tmp1 = Encrypt(tmp1, key1);
                 tmp1 = Encrypt(tmp1, key2);
@@ -158,50 +157,44 @@ namespace AesNi
                 tmp1 = Encrypt(tmp1, key8);
                 tmp1 = Encrypt(tmp1, key9);
                 t = EncryptLast(tmp1, key10);
-
-                position = 0;
-                lastBlock.Clear();
             }
 
             h2 = Ghash.Gfmul(h, h);
             h3 = Ghash.Gfmul(h, h2);
             h4 = Ghash.Gfmul(h, h3);
 
-            left = addt.Length;
-            while (left >= BlockSize * 4)
+            for (i = 0; i < addt.Length / 16 / 4; i++)
             {
-                tmp1 = ReadUnalignedOffset(ref addtRef, position + 0 * BlockSize);
-                tmp2 = ReadUnalignedOffset(ref addtRef, position + 1 * BlockSize);
-                tmp3 = ReadUnalignedOffset(ref addtRef, position + 2 * BlockSize);
-                tmp4 = ReadUnalignedOffset(ref addtRef, position + 3 * BlockSize);
+                tmp1 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 0));
+                tmp2 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 1));
+                tmp3 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 2));
+                tmp4 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 3));
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
                 tmp3 = Shuffle(tmp3, bswapMask);
                 tmp4 = Shuffle(tmp4, bswapMask);
-
                 tmp1 = Xor(x, tmp1);
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
-
-                position += BlockSize * 4;
-                left -= BlockSize * 4;
             }
 
-            while (left >= BlockSize)
+            for (i = i * 4; i < addt.Length / 16; i++)
             {
-                tmp1 = ReadUnalignedOffset(ref addtRef, position);
+                tmp1 = ReadUnalignedOffset(ref addtRef, 16 * i);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
-
-                position += BlockSize;
-                left -= BlockSize;
             }
 
-            if (left > 0)
+            if (addt.Length % 16 != 0)
             {
-                addt.Slice(position).CopyTo(lastBlock);
+                lastBlock.Clear();
+                for (j = 0; j < addt.Length % 16; j++)
+                {
+                    lastBlock[j] = addt[i * 16 + j];
+                }
+
                 tmp1 = ReadUnaligned(ref lastBlockRef);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
@@ -209,25 +202,22 @@ namespace AesNi
             }
 
             ctr1 = Shuffle(y, bswapEpi64);
-            ctr1 = Add(ctr1, one);
-            ctr2 = Add(ctr1, one);
-            ctr3 = Add(ctr2, one);
-            ctr4 = Add(ctr3, one);
+            ctr1 = Add(ctr1.AsUInt64(), one.AsUInt64()).AsByte();
+            ctr2 = Add(ctr1.AsUInt64(), one.AsUInt64()).AsByte();
+            ctr3 = Add(ctr2.AsUInt64(), one.AsUInt64()).AsByte();
+            ctr4 = Add(ctr3.AsUInt64(), one.AsUInt64()).AsByte();
 
-            position = 0;
-            left = input.Length;
-
-            while (left >= BlockSize * 4)
+            for (i = 0; i < input.Length / 16 / 4; i++)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
                 tmp2 = Shuffle(ctr2, bswapEpi64);
                 tmp3 = Shuffle(ctr3, bswapEpi64);
                 tmp4 = Shuffle(ctr4, bswapEpi64);
 
-                ctr1 = Add(ctr1, four);
-                ctr2 = Add(ctr2, four);
-                ctr3 = Add(ctr3, four);
-                ctr4 = Add(ctr4, four);
+                ctr1 = Add(ctr1.AsUInt64(), four.AsUInt64()).AsByte();
+                ctr2 = Add(ctr2.AsUInt64(), four.AsUInt64()).AsByte();
+                ctr3 = Add(ctr3.AsUInt64(), four.AsUInt64()).AsByte();
+                ctr4 = Add(ctr4.AsUInt64(), four.AsUInt64()).AsByte();
 
                 tmp1 = Xor(tmp1, key0);
                 tmp2 = Xor(tmp2, key0);
@@ -284,15 +274,15 @@ namespace AesNi
                 tmp3 = EncryptLast(tmp3, key10);
                 tmp4 = EncryptLast(tmp4, key10);
 
-                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, position + 0 * BlockSize));
-                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, position + 1 * BlockSize));
-                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, position + 2 * BlockSize));
-                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, position + 3 * BlockSize));
+                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 0)));
+                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 1)));
+                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 2)));
+                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 3)));
 
-                WriteUnalignedOffset(ref outputRef, position + 0 * BlockSize, tmp1);
-                WriteUnalignedOffset(ref outputRef, position + 1 * BlockSize, tmp2);
-                WriteUnalignedOffset(ref outputRef, position + 2 * BlockSize, tmp3);
-                WriteUnalignedOffset(ref outputRef, position + 3 * BlockSize, tmp4);
+                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 0), tmp1);
+                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 1), tmp2);
+                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 2), tmp3);
+                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 3), tmp4);
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
@@ -302,15 +292,12 @@ namespace AesNi
                 tmp1 = Xor(x, tmp1);
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
-
-                position += BlockSize * 4;
-                left -= BlockSize * 4;
             }
 
-            while (left >= BlockSize)
+            for (k = i * 4; k < input.Length / 16; k++)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
-                ctr1 = Add(ctr1, one);
+                ctr1 = Add(ctr1.AsUInt64(), one.AsUInt64()).AsByte();
                 tmp1 = Xor(tmp1, key0);
                 tmp1 = Encrypt(tmp1, key1);
                 tmp1 = Encrypt(tmp1, key2);
@@ -322,18 +309,15 @@ namespace AesNi
                 tmp1 = Encrypt(tmp1, key8);
                 tmp1 = Encrypt(tmp1, key9);
                 tmp1 = EncryptLast(tmp1, key10);
-
-                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, position));
-                WriteUnalignedOffset(ref outputRef, position, tmp1);
+                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
+                WriteUnalignedOffset(ref outputRef, 16 * k, tmp1);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
-
-                position += BlockSize;
-                left -= BlockSize;
             }
 
-            if (left > 0)
+            //If remains one incomplete block
+            if (input.Length % 16 != 0)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
                 tmp1 = Xor(tmp1, key0);
@@ -347,27 +331,27 @@ namespace AesNi
                 tmp1 = Encrypt(tmp1, key8);
                 tmp1 = Encrypt(tmp1, key9);
                 tmp1 = EncryptLast(tmp1, key10);
-                
-                tmp1 = Xor(tmp1,  ReadUnalignedOffset(ref inputRef, position));
+                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
                 WriteUnalignedOffset(ref lastBlockRef, 0, tmp1);
-                int u;
-                for (u = 0; u < input.Length % 16; u++)
+                for (j = 0; j < input.Length % 16; j++)
                 {
-                    output[position + u] = lastBlock[u];
+                    output[k * 16 + j] = lastBlock[j];
                 }
-                for (; u < 16; u++)
+
+                for (; j < 16; j++)
                 {
-                    lastBlock[u] = 0;
+                    lastBlock[j] = 0;
                 }
-                tmp1 = ReadUnaligned(ref lastBlockRef);
+
+                tmp1 = ReadUnalignedOffset(ref lastBlockRef, 0);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
             }
-            
+
             tmp1 = Insert(tmp1.AsUInt64(), (ulong)input.Length * 8, 0).AsByte();
             tmp1 = Insert(tmp1.AsUInt64(), (ulong)addt.Length * 8, 1).AsByte();
-            
+
             x = Xor(x, tmp1);
             x = Ghash.Gfmul(x, h);
             x = Shuffle(x, bswapMask);

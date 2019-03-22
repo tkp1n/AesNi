@@ -29,10 +29,10 @@ namespace AesNi
             tmp3 = Xor(tmp3, tmp5);
             tmp6 = Xor(tmp6, tmp4);
 
-            tmp7 = ShiftRightLogical(tmp3, 31);
-            tmp8 = ShiftRightLogical(tmp6, 31);
-            tmp3 = ShiftLeftLogical(tmp3, 1);
-            tmp6 = ShiftLeftLogical(tmp6, 1);
+            tmp7 = ShiftRightLogical(tmp3.AsUInt32(), 31).AsUInt64();
+            tmp8 = ShiftRightLogical(tmp6.AsUInt32(), 31).AsUInt64();
+            tmp3 = ShiftLeftLogical(tmp3.AsUInt32(), 1).AsUInt64();
+            tmp6 = ShiftLeftLogical(tmp6.AsUInt32(), 1).AsUInt64();
 
             tmp9 = ShiftRightLogical128BitLane(tmp7, 12);
             tmp8 = ShiftLeftLogical128BitLane(tmp8, 4);
@@ -41,9 +41,9 @@ namespace AesNi
             tmp6 = Or(tmp6, tmp8);
             tmp6 = Or(tmp6, tmp9);
 
-            tmp7 = ShiftLeftLogical(tmp3, 31);
-            tmp8 = ShiftLeftLogical(tmp3, 30);
-            tmp9 = ShiftLeftLogical(tmp3, 25);
+            tmp7 = ShiftLeftLogical(tmp3.AsUInt32(), 31).AsUInt64();
+            tmp8 = ShiftLeftLogical(tmp3.AsUInt32(), 30).AsUInt64();
+            tmp9 = ShiftLeftLogical(tmp3.AsUInt32(), 25).AsUInt64();
 
             tmp7 = Xor(tmp7, tmp8);
             tmp7 = Xor(tmp7, tmp9);
@@ -51,9 +51,9 @@ namespace AesNi
             tmp7 = ShiftLeftLogical128BitLane(tmp7, 12);
             tmp3 = Xor(tmp3, tmp7);
 
-            tmp2 = ShiftRightLogical(tmp3, 1);
-            tmp4 = ShiftRightLogical(tmp3, 2);
-            tmp5 = ShiftRightLogical(tmp3, 7);
+            tmp2 = ShiftRightLogical(tmp3.AsUInt32(), 1).AsUInt64();
+            tmp4 = ShiftRightLogical(tmp3.AsUInt32(), 2).AsUInt64();
+            tmp5 = ShiftRightLogical(tmp3.AsUInt32(), 7).AsUInt64();
             tmp2 = Xor(tmp2, tmp4);
             tmp2 = Xor(tmp2, tmp5);
             tmp2 = Xor(tmp2, tmp8);
@@ -66,55 +66,6 @@ namespace AesNi
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<byte> Gfmul(Vector128<byte> a, Vector128<byte> b)
             => Gfmul(a.AsUInt64(), b.AsUInt64()).AsByte();
-
-        /// <summary>
-        /// Figure 7. Code Sample - Performing Ghash Using Algorithms 2 and 4 with Reflected Input and Output
-        /// </summary>
-        public static Vector128<ulong> GfmulReflected(Vector128<ulong> a, Vector128<ulong> b)
-        {
-            Vector128<ulong> tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9, tmp10, tmp11, tmp12;
-            Vector128<ulong> mask = Vector128.Create(0x0, 0x0, 0x0, 0xffffffff).AsUInt64();
-
-            tmp3 = CarrylessMultiply(a, b, 0x00);
-            tmp6 = CarrylessMultiply(a, b, 0x11);
-
-            tmp4 = Shuffle(a.AsUInt32(), 78).AsUInt64();
-            tmp5 = Shuffle(b.AsUInt32(), 78).AsUInt64();
-            tmp4 = Xor(tmp4, a);
-            tmp5 = Xor(tmp5, b);
-
-            tmp4 = CarrylessMultiply(tmp4, tmp5, 0x00);
-            tmp4 = Xor(tmp4, tmp3);
-            tmp4 = Xor(tmp4, tmp6);
-
-            tmp5 = ShiftLeftLogical128BitLane(tmp4, 8);
-            tmp4 = ShiftRightLogical128BitLane(tmp4, 8);
-            tmp3 = Xor(tmp3, tmp5);
-            tmp6 = Xor(tmp6, tmp4);
-
-            tmp7 = ShiftRightLogical(tmp6, 31);
-            tmp8 = ShiftRightLogical(tmp6, 30);
-            tmp9 = ShiftRightLogical(tmp6, 25);
-
-            tmp7 = Xor(tmp7, tmp8);
-            tmp7 = Xor(tmp7, tmp9);
-
-            tmp8 = Shuffle(tmp7.AsUInt32(), 147).AsUInt64();
-
-            tmp7 = And(mask, tmp8);
-            tmp8 = AndNot(mask, tmp8);
-            tmp3 = Xor(tmp3, tmp8);
-            tmp6 = Xor(tmp6, tmp7);
-
-            tmp10 = ShiftLeftLogical(tmp6, 1);
-            tmp3 = Xor(tmp3, tmp10);
-            tmp11 = ShiftLeftLogical(tmp6, 2);
-            tmp3 = Xor(tmp3, tmp11);
-            tmp12 = ShiftLeftLogical(tmp6, 7);
-            tmp3 = Xor(tmp3, tmp12);
-
-            return Xor(tmp3, tmp6);
-        }
 
         /// <summary>
         /// Figure 8. Code Sample -Performing GhashUsing an Aggregated Reduction Method
@@ -186,10 +137,10 @@ namespace AesNi
             tmp3 = lo;
             tmp6 = hi;
 
-            tmp7 = ShiftRightLogical(tmp3, 31);
-            tmp8 = ShiftRightLogical(tmp6, 31);
-            tmp3 = ShiftLeftLogical(tmp3, 1);
-            tmp6 = ShiftLeftLogical(tmp6, 1);
+            tmp7 = ShiftRightLogical(tmp3.AsUInt32(), 31).AsUInt64();
+            tmp8 = ShiftRightLogical(tmp6.AsUInt32(), 31).AsUInt64();
+            tmp3 = ShiftLeftLogical(tmp3.AsUInt32(), 1).AsUInt64();
+            tmp6 = ShiftLeftLogical(tmp6.AsUInt32(), 1).AsUInt64();
 
             tmp9 = ShiftRightLogical128BitLane(tmp7, 12);
             tmp8 = ShiftLeftLogical128BitLane(tmp8, 4);
@@ -198,9 +149,9 @@ namespace AesNi
             tmp6 = Or(tmp6, tmp8);
             tmp6 = Or(tmp6, tmp9);
 
-            tmp7 = ShiftLeftLogical(tmp3, 31);
-            tmp8 = ShiftLeftLogical(tmp3, 30);
-            tmp9 = ShiftLeftLogical(tmp3, 25);
+            tmp7 = ShiftLeftLogical(tmp3.AsUInt32(), 31).AsUInt64();
+            tmp8 = ShiftLeftLogical(tmp3.AsUInt32(), 30).AsUInt64();
+            tmp9 = ShiftLeftLogical(tmp3.AsUInt32(), 25).AsUInt64();
 
             tmp7 = Xor(tmp7, tmp8);
             tmp7 = Xor(tmp7, tmp9);
@@ -208,9 +159,9 @@ namespace AesNi
             tmp7 = ShiftLeftLogical128BitLane(tmp7, 12);
             tmp3 = Xor(tmp3, tmp7);
 
-            tmp2 = ShiftRightLogical(tmp3, 1);
-            tmp4 = ShiftRightLogical(tmp3, 2);
-            tmp5 = ShiftRightLogical(tmp3, 7);
+            tmp2 = ShiftRightLogical(tmp3.AsUInt32(), 1).AsUInt64();
+            tmp4 = ShiftRightLogical(tmp3.AsUInt32(), 2).AsUInt64();
+            tmp5 = ShiftRightLogical(tmp3.AsUInt32(), 7).AsUInt64();
             tmp2 = Xor(tmp2, tmp4);
             tmp2 = Xor(tmp2, tmp5);
             tmp2 = Xor(tmp2, tmp8);
