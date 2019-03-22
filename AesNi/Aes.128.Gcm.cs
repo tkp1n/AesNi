@@ -12,7 +12,7 @@ namespace AesNi
 {
     public static partial class Aes
     {
-        public static void EncryptGcm(
+        internal static void EncryptGcm(
             ReadOnlySpan<byte> input,
             Span<byte> output,
             ReadOnlySpan<byte> addt,
@@ -350,7 +350,7 @@ namespace AesNi
         }
 
         // https://github.com/freebsd/freebsd/blob/master/sys/crypto/aesni/aesni_ghash.c
-        public static bool DecryptGcm(
+        internal static bool DecryptGcm(
             ReadOnlySpan<byte> input,
             Span<byte> output,
             ReadOnlySpan<byte> addt,

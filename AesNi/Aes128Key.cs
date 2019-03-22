@@ -9,7 +9,7 @@ using static System.Runtime.Intrinsics.X86.Sse2;
 namespace AesNi
 {
     // TODO: Consider using seperate key classes for algorithms using AES only in the encrypt direction to avoid 
-    public sealed class Aes128Key : AesKey
+    internal sealed class Aes128Key : AesKey
     {
         private const int Nb = 4;
         private const int Nk = 4;

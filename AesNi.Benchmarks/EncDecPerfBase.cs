@@ -7,7 +7,6 @@ namespace AesNi.Benchmarks
 {
     public abstract class EncDecPerfBase : TestKeysBase
     {
-
         protected  ICryptoTransform frameworkEncryptTransform;
         protected  ICryptoTransform frameworkDecryptTransform;
         protected  byte[] input;
@@ -38,20 +37,8 @@ namespace AesNi.Benchmarks
             }
         }
 
-        protected  AesKey AesKey
-        {
-            get
-            {
-                switch (KeySize)
-                {
-                    case 128: return new Aes128Key(KeyBytes);
-                    case 192: return new Aes192Key(KeyBytes);
-                    case 256: return new Aes256Key(KeyBytes);
-                    default: throw new InvalidDataException();
-                }
-            }
-        }
-        
+        protected  AesKey AesKey => AesKey.Create(KeyBytes);
+
         [GlobalSetup]
         public void Setup()
         {

@@ -11,7 +11,7 @@ namespace AesNi
 {
     public static partial class Aes
     {
-        public static void EncryptCbc(
+        internal static void EncryptCbc(
             ReadOnlySpan<byte> plaintext,
             Span<byte> ciphertext,
             ReadOnlySpan<byte> iv,
@@ -98,7 +98,7 @@ namespace AesNi
             WriteUnalignedOffset(ref outputRef, position, feedback);
         }
 
-        public static void DecryptCbc(
+        internal static void DecryptCbc(
             ReadOnlySpan<byte> ciphertext,
             Span<byte> plaintext,
             ReadOnlySpan<byte> iv,

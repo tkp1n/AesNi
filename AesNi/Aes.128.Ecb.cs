@@ -10,7 +10,7 @@ namespace AesNi
 {
     public static partial class Aes
     {
-        public static void EncryptEcb(
+        internal static void EncryptEcb(
             ReadOnlySpan<byte> plaintext,
             Span<byte> ciphertext,
             Aes128Key key,
@@ -220,7 +220,7 @@ namespace AesNi
             WriteUnalignedOffset(ref outputRef, position, lBlock);
         }
 
-        public static void DecryptEcb(
+        internal static void DecryptEcb(
             ReadOnlySpan<byte> ciphertext,
             Span<byte> plaintext,
             Aes128Key key,

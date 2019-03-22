@@ -173,8 +173,8 @@ namespace AesNi
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector128<byte> Reduce4(
             Vector128<byte> h1, Vector128<byte> h2, Vector128<byte> h3, Vector128<byte> h4,
-            Vector128<byte> x1, Vector128<byte> x2, Vector128<byte> x3, Vector128<byte> x4) =>
-            Reduce4(h1.AsUInt64(), h2.AsUInt64(), h3.AsUInt64(), h4.AsUInt64(),
+            Vector128<byte> x1, Vector128<byte> x2, Vector128<byte> x3, Vector128<byte> x4)
+            => Reduce4(h1.AsUInt64(), h2.AsUInt64(), h3.AsUInt64(), h4.AsUInt64(),
                     x1.AsUInt64(), x2.AsUInt64(), x3.AsUInt64(), x4.AsUInt64()).AsByte();
     }
 }
