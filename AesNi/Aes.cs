@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
 using System.Security.Cryptography;
 
 namespace AesNi
@@ -11,6 +12,13 @@ namespace AesNi
     {
         private const int Kn = 4;
         private const int BlockSize = 16;
+
+        private static readonly Vector128<byte> One = Vector128.Create(0, 0, 1, 0).AsByte();
+        private static readonly Vector128<byte> Four = Vector128.Create(0, 0, 4, 0).AsByte();
+        private static readonly Vector128<byte> BswapEpi64
+            = Vector128.Create((byte)7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
+        private static readonly Vector128<byte> BswapMask
+            = Vector128.Create((byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
         // TODO: harmonize default parameter values (e.g. paddingMode)
 
@@ -84,6 +92,37 @@ namespace AesNi
             }
         }
 
+        public static void Encrypt(ReadOnlySpan<byte> plaintext,
+            Span<byte> ciphertext,
+            ReadOnlySpan<byte> iv,
+            ReadOnlySpan<byte> aad,
+            Span<byte> tag,
+            AesKey key,
+            PaddingMode paddingMode = PaddingMode.PKCS7)
+        {
+            if (paddingMode == PaddingMode.None && plaintext.Length % BlockSize != 0)
+                ThrowHelper.ThrowInputNotMultipleOfBlockSizeException(nameof(plaintext));
+            // TODO: correctly validate ciphertext length
+            if (ciphertext.Length < plaintext.Length)
+                ThrowHelper.ThrowDestinationBufferTooSmallException(nameof(ciphertext));
+            // TODO: moar validation
+
+            switch (key)
+            {
+                case Aes128Key aes128Key:
+                    EncryptGcm(plaintext, ciphertext, aad, iv, tag, aes128Key);
+                    return;
+                case Aes192Key aes192Key:
+                    EncryptGcm(plaintext, ciphertext, aad, iv, tag, aes192Key);
+                    return;
+                case Aes256Key aes256Key:
+                    EncryptGcm(plaintext, ciphertext, aad, iv, tag, aes256Key);
+                    return;
+            }
+            
+            ThrowHelper.ThrowNotImplementedException();
+        }
+        
         public static void Decrypt(ReadOnlySpan<byte> ciphertext,
             Span<byte> plaintext,
             ReadOnlySpan<byte> iv,

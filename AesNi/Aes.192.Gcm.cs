@@ -18,7 +18,7 @@ namespace AesNi
             ReadOnlySpan<byte> addt,
             ReadOnlySpan<byte> iv,
             Span<byte> tag,
-            Aes128Key key)
+            Aes192Key key)
         {
             int i, j, k;
             Vector128<byte> tmp1, tmp2, tmp3, tmp4;
@@ -51,6 +51,8 @@ namespace AesNi
             var key8 = ReadUnalignedOffset(ref expandedKey, Kn * 8);
             var key9 = ReadUnalignedOffset(ref expandedKey, Kn * 9);
             var key10 = ReadUnalignedOffset(ref expandedKey, Kn * 10);
+            var key11 = ReadUnalignedOffset(ref expandedKey, Kn * 11);
+            var key12 = ReadUnalignedOffset(ref expandedKey, Kn * 12);
 
             if (iv.Length == 96 / 8)
             {
@@ -87,8 +89,14 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key9);
                 tmp2 = AesIntrin.Encrypt(tmp2, key9);
 
-                h = AesIntrin.EncryptLast(tmp1, key10);
-                t = AesIntrin.EncryptLast(tmp2, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp2 = AesIntrin.Encrypt(tmp2, key10);
+                
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                tmp2 = AesIntrin.Encrypt(tmp2, key11);
+                
+                h = AesIntrin.EncryptLast(tmp1, key12);
+                t = AesIntrin.EncryptLast(tmp2, key12);
 
                 h = Shuffle(h, bswapMask);
             }
@@ -104,7 +112,9 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key7);
                 tmp1 = AesIntrin.Encrypt(tmp1, key8);
                 tmp1 = AesIntrin.Encrypt(tmp1, key9);
-                h = AesIntrin.EncryptLast(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                h = AesIntrin.EncryptLast(tmp1, key12);
 
                 h = Shuffle(h, bswapMask);
                 y = Vector128<byte>.Zero;
@@ -146,7 +156,9 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key7);
                 tmp1 = AesIntrin.Encrypt(tmp1, key8);
                 tmp1 = AesIntrin.Encrypt(tmp1, key9);
-                t = AesIntrin.EncryptLast(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                t = AesIntrin.EncryptLast(tmp1, key12);
             }
 
             h2 = Ghash.Gfmul(h, h);
@@ -259,10 +271,20 @@ namespace AesNi
                 tmp3 = AesIntrin.Encrypt(tmp3, key9);
                 tmp4 = AesIntrin.Encrypt(tmp4, key9);
 
-                tmp1 = AesIntrin.EncryptLast(tmp1, key10);
-                tmp2 = AesIntrin.EncryptLast(tmp2, key10);
-                tmp3 = AesIntrin.EncryptLast(tmp3, key10);
-                tmp4 = AesIntrin.EncryptLast(tmp4, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp2 = AesIntrin.Encrypt(tmp2, key10);
+                tmp3 = AesIntrin.Encrypt(tmp3, key10);
+                tmp4 = AesIntrin.Encrypt(tmp4, key10);
+
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                tmp2 = AesIntrin.Encrypt(tmp2, key11);
+                tmp3 = AesIntrin.Encrypt(tmp3, key11);
+                tmp4 = AesIntrin.Encrypt(tmp4, key11);
+
+                tmp1 = AesIntrin.EncryptLast(tmp1, key12);
+                tmp2 = AesIntrin.EncryptLast(tmp2, key12);
+                tmp3 = AesIntrin.EncryptLast(tmp3, key12);
+                tmp4 = AesIntrin.EncryptLast(tmp4, key12);
 
                 tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 0)));
                 tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 1)));
@@ -298,7 +320,9 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key7);
                 tmp1 = AesIntrin.Encrypt(tmp1, key8);
                 tmp1 = AesIntrin.Encrypt(tmp1, key9);
-                tmp1 = AesIntrin.EncryptLast(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                tmp1 = AesIntrin.EncryptLast(tmp1, key12);
                 tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
                 WriteUnalignedOffset(ref outputRef, 16 * k, tmp1);
                 tmp1 = Shuffle(tmp1, bswapMask);
@@ -320,7 +344,9 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key7);
                 tmp1 = AesIntrin.Encrypt(tmp1, key8);
                 tmp1 = AesIntrin.Encrypt(tmp1, key9);
-                tmp1 = AesIntrin.EncryptLast(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key10);
+                tmp1 = AesIntrin.Encrypt(tmp1, key11);
+                tmp1 = AesIntrin.EncryptLast(tmp1, key12);
                 tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
                 WriteUnalignedOffset(ref lastBlockRef, 0, tmp1);
                 for (j = 0; j < input.Length % 16; j++)
