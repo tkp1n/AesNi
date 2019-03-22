@@ -4,8 +4,14 @@ using System.Security.Cryptography;
 
 namespace AesNi
 {
+    // https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf    
+    // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf 
+    // https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
     public static partial class Aes
     {
+        private const int Kn = 4;
+        private const int BlockSize = 16;
+
         // TODO: harmonize default parameter values (e.g. paddingMode)
 
         public static void Encrypt(ReadOnlySpan<byte> plaintext,

@@ -8,13 +8,8 @@ using AesIntrin = System.Runtime.Intrinsics.X86.Aes;
 
 namespace AesNi
 {
-    // https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf    
-    // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf 
     public static partial class Aes
     {
-        private const int Kn = 4;
-        private const int BlockSize = 16;
-
         public static void EncryptEcb(
             ReadOnlySpan<byte> plaintext,
             Span<byte> ciphertext,

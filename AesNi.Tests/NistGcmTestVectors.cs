@@ -48,7 +48,7 @@ namespace AesNi.Tests
             {
                 var acutalCt = new byte[testSet.Ciphertext.Length];
                 var acutalTag = new byte[testSet.Tag.Length];
-                AesGcm.EncryptGcm(testSet.Plaintext, acutalCt, testSet.Aad, testSet.Iv, acutalTag, new Aes128Key(testSet.Key));
+                Aes.EncryptGcm(testSet.Plaintext, acutalCt, testSet.Aad, testSet.Iv, acutalTag, new Aes128Key(testSet.Key));
                 Assert.Equal(testSet.Ciphertext, acutalCt);
                 Assert.Equal(testSet.Tag, acutalTag);
             }

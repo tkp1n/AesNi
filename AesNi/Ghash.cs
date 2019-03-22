@@ -6,7 +6,6 @@ using static System.Runtime.Intrinsics.X86.Sse2;
 namespace AesNi
 {
     /// <summary>
-    /// TODO: TEST!!
     /// https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
     /// </summary>
     internal static class Ghash
