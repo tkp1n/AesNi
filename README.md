@@ -2,9 +2,9 @@
 
 **Do not use this in production! This is a toy project to explore `System.Runtime.Intrinsics` and AES-NI**
 
-Currently with support for ECB and CBC encrypt/decrypt (all NIST KATs passing). 
+Currently with support for ECB, CBC and GCM encrypt/decrypt (all NIST KATs passing). 
 Adding all sorts of paddings is also supported, removing & verifying it is on my todo list...
-Other modes of use may follow as well (GCM could be interesting to implement using `PCLMULQDQ`).
+Other modes of use may follow as well.
 
 ## AES key expansion performance
 

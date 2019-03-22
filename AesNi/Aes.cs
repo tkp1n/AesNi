@@ -97,11 +97,8 @@ namespace AesNi
             ReadOnlySpan<byte> iv,
             ReadOnlySpan<byte> aad,
             Span<byte> tag,
-            AesKey key,
-            PaddingMode paddingMode = PaddingMode.PKCS7)
+            AesKey key)
         {
-            if (paddingMode == PaddingMode.None && plaintext.Length % BlockSize != 0)
-                ThrowHelper.ThrowInputNotMultipleOfBlockSizeException(nameof(plaintext));
             // TODO: correctly validate ciphertext length
             if (ciphertext.Length < plaintext.Length)
                 ThrowHelper.ThrowDestinationBufferTooSmallException(nameof(ciphertext));
@@ -200,11 +197,8 @@ namespace AesNi
             ReadOnlySpan<byte> iv,
             ReadOnlySpan<byte> aad,
             ReadOnlySpan<byte> tag,
-            AesKey key,
-            PaddingMode paddingMode = PaddingMode.PKCS7)
+            AesKey key)
         {
-            if (paddingMode == PaddingMode.None && plaintext.Length % BlockSize != 0)
-                ThrowHelper.ThrowInputNotMultipleOfBlockSizeException(nameof(plaintext));
             // TODO: correctly validate ciphertext length
             if (ciphertext.Length < plaintext.Length)
                 ThrowHelper.ThrowDestinationBufferTooSmallException(nameof(ciphertext));
