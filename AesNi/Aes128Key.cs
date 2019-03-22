@@ -28,7 +28,7 @@ namespace AesNi
         internal override ReadOnlySpan<int> ExpandedKey => _expandedKey;
 
         // TODO: validation
-        public void ReKey(ReadOnlySpan<byte> newKey)
+        public override void ReKey(ReadOnlySpan<byte> newKey)
         {
             KeyExpansion(newKey, _expandedKey);
         }

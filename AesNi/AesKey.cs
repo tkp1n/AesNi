@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace AesNi
 {
@@ -6,13 +7,20 @@ namespace AesNi
     {
         internal abstract ReadOnlySpan<int> ExpandedKey { get; }
 
+        public abstract void ReKey(ReadOnlySpan<byte> key);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AesKey Create(ReadOnlySpan<byte> key)
         {
-            if (key.Length == 16) return new Aes128Key(key);
-            if (key.Length == 24) return new Aes192Key(key);
-            if (key.Length == 32) return new Aes256Key(key);
+            switch (key.Length)
+            {
+                case 16: return new Aes128Key(key);
+                case 24: return new Aes192Key(key);
+                case 32: return new Aes256Key(key);
+            }
 
-            throw new ArgumentException();
+            ThrowHelper.ThrowUnknownKeySizeException(nameof(key), key.Length); 
+            return null;
         }
     }
 }
