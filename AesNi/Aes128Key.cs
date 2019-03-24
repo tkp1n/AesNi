@@ -8,16 +8,13 @@ using static System.Runtime.Intrinsics.X86.Sse2;
 
 namespace AesNi
 {
-    // TODO: Consider using seperate key classes for algorithms using AES only in the encrypt direction to avoid 
     internal sealed class Aes128Key : AesKey
     {
-        private const int Nb = 4;
-        private const int Nk = 4;
-        private const int Nr = 10;
+        private const int NumberOfRoundKeys = 10;
 
         // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec 
         // inspiration drawn from https://github.com/sebastien-riou/aes-brute-force/blob/master/include/aes_ni.h
-        private readonly int[] _expandedKey = new int[2 * Nb * Nr];
+        private readonly int[] _expandedKey = new int[2 * IntsPerRoundKey * NumberOfRoundKeys];
 
         // TODO: validation
         public Aes128Key(ReadOnlySpan<byte> key)
@@ -36,57 +33,58 @@ namespace AesNi
         // TODO: Verify whether calculating decryption key expansion after encryption key expansion is faster (locality)
         private static void KeyExpansion(ReadOnlySpan<byte> key, Span<int> keySchedule)
         {
-            ref var expandedKey = ref MemoryMarshal.GetReference(keySchedule);
-
-            var tmp = ReadUnaligned(key);
-            WriteUnalignedOffset(ref expandedKey, Nb * 0, tmp);
+            ref var expandedKey = ref Unsafe.As<int, byte>(ref MemoryMarshal.GetReference(keySchedule));
+            ref var keyRef = ref MemoryMarshal.GetReference(key);
+            
+            var tmp = ReadUnaligned(ref keyRef);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 0, tmp);
 
             tmp = Aes128KeyExp(tmp, 0x01);
-            WriteUnalignedOffset(ref expandedKey, Nb * 1, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 19, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 19, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x02);
-            WriteUnalignedOffset(ref expandedKey, Nb * 2, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 18, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 18, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x04);
-            WriteUnalignedOffset(ref expandedKey, Nb * 3, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 17, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 17, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x08);
-            WriteUnalignedOffset(ref expandedKey, Nb * 4, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 16, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 16, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x10);
-            WriteUnalignedOffset(ref expandedKey, Nb * 5, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 15, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 15, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x20);
-            WriteUnalignedOffset(ref expandedKey, Nb * 6, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 14, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x40);
-            WriteUnalignedOffset(ref expandedKey, Nb * 7, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 13, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x80);
-            WriteUnalignedOffset(ref expandedKey, Nb * 8, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 12, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x1B);
-            WriteUnalignedOffset(ref expandedKey, Nb * 9, tmp);
-            WriteUnalignedOffset(ref expandedKey, Nb * 11, InverseMixColumns(tmp.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11, InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x36);
-            WriteUnalignedOffset(ref expandedKey, Nb * 10, tmp);
+            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10, tmp);
         }
 
         // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<int> Aes128KeyExp(Vector128<int> key, byte rcon)
+        private static Vector128<byte> Aes128KeyExp(Vector128<byte> key, byte rcon)
         {
-            var temp = KeygenAssist(key.AsByte(), rcon).AsInt32();
-            temp = Shuffle(temp, 0xFF);
+            var temp = KeygenAssist(key, rcon);
+            temp = Shuffle(temp.AsInt32(), 0xFF).AsByte();
             key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
             key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
             key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
@@ -97,15 +95,15 @@ namespace AesNi
         // Below implementation is tested and working, but benched slightly worse than the above
         // See: http://lxr.linux.no/#linux+v3.7.4/arch/x86/crypto/aesni-intel_asm.S#L1707
         // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static Vector128<int> Aes128KeyExp(Vector128<int> xmm0, byte rcon)
+        // private static Vector128<byte> Aes128KeyExp(Vector128<byte> xmm0, byte rcon)
         // {
-        //     Vector128<int> xmm4 = Vector128<int>.Zero;
-        //     Vector128<int> xmm1 = KeygenAssist(xmm0.AsByte(), rcon).AsInt32(); 
+        //     Vector128<byte> xmm4 = Vector128<byte>.Zero;
+        //     Vector128<byte> xmm1 = KeygenAssist(xmm0, rcon); 
         //     
-        //     xmm1 = Shuffle(xmm1, 0xFF);
-        //     xmm4 = Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x10).AsInt32();
+        //     xmm1 = Shuffle(xmm1.AsInt32(), 0xFF).AsByte();
+        //     xmm4 = System.Runtime.Intrinsics.X86.Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x10).AsByte();
         //     xmm0 = Xor(xmm0, xmm4);
-        //     xmm4 = Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x8C).AsInt32();
+        //     xmm4 = System.Runtime.Intrinsics.X86.Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x8C).AsByte();
         //     xmm0 = Xor(xmm0, xmm4);
         //     return Xor(xmm0, xmm1);
         // }
