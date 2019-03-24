@@ -10,9 +10,9 @@ Other modes of use may follow as well.
 
 |                Method |     Mean |     Error |    StdDev |
 |---------------------- |---------:|----------:|----------:|
-| Aes128BitKeyExpansion | 37.80 ns | 0.3024 ns | 0.2828 ns |
-| Aes192BitKeyExpansion | 42.47 ns | 0.5052 ns | 0.4726 ns |
-| Aes256BitKeyExpansion | 90.25 ns | 0.3390 ns | 0.3171 ns |
+| Aes128BitKeyExpansion | 35.91 ns | 0.6520 ns | 0.6099 ns |
+| Aes192BitKeyExpansion | 47.13 ns | 0.7675 ns | 0.6804 ns |
+| Aes256BitKeyExpansion | 42.32 ns | 0.9240 ns | 0.9887 ns |
 
 ## AES encrypt performance
 

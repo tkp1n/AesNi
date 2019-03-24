@@ -37,46 +37,46 @@ namespace AesNi
             ref var keyRef = ref MemoryMarshal.GetReference(key);
             
             var tmp = ReadUnaligned(ref keyRef);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 0, tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(0 * BytesPerRoundKey), tmp);
 
             tmp = Aes128KeyExp(tmp, 0x01);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 19, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(1 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(19 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x02);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 18, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(2 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(18 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x04);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 17, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(3 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(17 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x08);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 16, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(4 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(16 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x10);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 15, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(5 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(15 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x20);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(6 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(14 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x40);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(7 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(13 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x80);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(8 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(12 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x1B);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9, tmp);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11, InverseMixColumns(tmp));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(9 * BytesPerRoundKey), tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(11 * BytesPerRoundKey), InverseMixColumns(tmp));
 
             tmp = Aes128KeyExp(tmp, 0x36);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10, tmp);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(10 * BytesPerRoundKey), tmp);
         }
 
         // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf

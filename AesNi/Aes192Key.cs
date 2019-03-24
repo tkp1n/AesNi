@@ -31,77 +31,76 @@ namespace AesNi
         }
 
         // TODO: Verify whether calculating decryption key expansion after encryption key expansion is faster (locality)
-        private void KeyExpansion(ReadOnlySpan<byte> key, Span<int> keySchedule)
+        private static void KeyExpansion(ReadOnlySpan<byte> key, Span<int> keySchedule)
         {
             ref var expandedKey = ref Unsafe.As<int, byte>(ref MemoryMarshal.GetReference(keySchedule));
             ref var keyRef = ref MemoryMarshal.GetReference(key);
             
             // 0 (shared)
-            Unsafe.CopyBlock(
-                ref expandedKey, 
-                ref keyRef,
-                192 / 8);
+            var tmp1 = ReadUnaligned(ref keyRef);
+            WriteUnaligned(ref expandedKey, tmp1);
+            Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref expandedKey, (IntPtr)16), 
+                Unsafe.ReadUnaligned<Vector64<byte>>(ref Unsafe.AddByteOffset(ref keyRef, (IntPtr)16)));
 
-            var tmp1 = ReadUnaligned(ref expandedKey);
-            var tmp3 = ReadUnalignedOffset(ref expandedKey, 1 * BytesPerRoundKey);
+            var tmp3 = ReadUnalignedOffset(ref expandedKey, (IntPtr)(1 * BytesPerRoundKey));
 
             // 1, 2 / 23, 22
             Aes192KeyExp(ref tmp1, ref tmp3, 0x01);
-            var tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1), tmp1, 0);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 23, InverseMixColumns(tmp2));
+            var tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, (IntPtr)(1 * BytesPerRoundKey)), tmp1, 0);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(1 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(23 * BytesPerRoundKey), InverseMixColumns(tmp2));
             tmp2 = Shufpd(tmp1, tmp3, 1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 22, InverseMixColumns(tmp2));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(2 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(22 * BytesPerRoundKey), InverseMixColumns(tmp2));
 
             // 3 / 21
             Aes192KeyExp(ref tmp1, ref tmp3, 0x02);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3, tmp1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 21, InverseMixColumns(tmp1));
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4, tmp3);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(3 * BytesPerRoundKey), tmp1);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(21 * BytesPerRoundKey), InverseMixColumns(tmp1));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(4 * BytesPerRoundKey), tmp3);
 
             // 4, 5 / 20, 19
             Aes192KeyExp(ref tmp1, ref tmp3, 0x04);
-            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4), tmp1, 0);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 20, InverseMixColumns(tmp2));
+            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, (IntPtr)(4 * BytesPerRoundKey)), tmp1, 0);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(4 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(20 * BytesPerRoundKey), InverseMixColumns(tmp2));
             tmp2 = Shufpd(tmp1, tmp3, 1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 19, InverseMixColumns(tmp2));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(5 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(19 * BytesPerRoundKey), InverseMixColumns(tmp2));
 
             // 6 / 18
             Aes192KeyExp(ref tmp1, ref tmp3, 0x08);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6, tmp1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 18, InverseMixColumns(tmp1.AsByte()));
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7, tmp3);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(6 * BytesPerRoundKey), tmp1);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(18 * BytesPerRoundKey), InverseMixColumns(tmp1.AsByte()));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(7 * BytesPerRoundKey), tmp3);
 
             // 7, 8 / 17, 16
             Aes192KeyExp(ref tmp1, ref tmp3, 0x10);
-            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7), tmp1, 0);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 17, InverseMixColumns(tmp2));
+            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, (IntPtr)(7 * BytesPerRoundKey)), tmp1, 0);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(7 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(17 * BytesPerRoundKey), InverseMixColumns(tmp2));
             tmp2 = Shufpd(tmp1, tmp3, 1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 16, InverseMixColumns(tmp2));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(8 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(16 * BytesPerRoundKey), InverseMixColumns(tmp2));
 
             // 9 / 15
             Aes192KeyExp(ref tmp1, ref tmp3, 0x20);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9, tmp1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 15, InverseMixColumns(tmp1));
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10, tmp3);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(9 * BytesPerRoundKey), tmp1);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(15 * BytesPerRoundKey), InverseMixColumns(tmp1));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(10 * BytesPerRoundKey), tmp3);
 
             // 10, 11 / 14, 13
             Aes192KeyExp(ref tmp1, ref tmp3, 0x40);
-            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10), tmp1, 0);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14, InverseMixColumns(tmp2));
+            tmp2 = Shufpd(ReadUnalignedOffset(ref expandedKey, (IntPtr)(10 * BytesPerRoundKey)), tmp1, 0);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(10 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(14 * BytesPerRoundKey), InverseMixColumns(tmp2));
             tmp2 = Shufpd(tmp1, tmp3, 1);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11, tmp2);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13, InverseMixColumns(tmp2));
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(11 * BytesPerRoundKey), tmp2);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(13 * BytesPerRoundKey), InverseMixColumns(tmp2));
 
             // 12 (shared)
             Aes192KeyExp(ref tmp1, ref tmp3, 0x80);
-            WriteUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12, tmp1);
+            WriteUnalignedOffset(ref expandedKey, (IntPtr)(12 * BytesPerRoundKey), tmp1);
         }
         
         // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
@@ -119,6 +118,7 @@ namespace AesNi
             tmp3 = Xor(tmp3, tmp2);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<byte> Shufpd(Vector128<byte> left, Vector128<byte> right, byte control)
             => Shuffle(left.AsDouble(), right.AsDouble(), control).AsByte();
     }
