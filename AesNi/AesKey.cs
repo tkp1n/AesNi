@@ -7,10 +7,9 @@ namespace AesNi
     //  second half of key expansion
     public abstract class AesKey
     {
-        protected const int IntsPerRoundKey = 4;
         protected const int BytesPerRoundKey = 16;
-        
-        internal abstract ReadOnlySpan<int> ExpandedKey { get; }
+
+        internal abstract ReadOnlySpan<byte> ExpandedKey { get; }
 
         public abstract void ReKey(ReadOnlySpan<byte> key);
 
@@ -24,7 +23,7 @@ namespace AesNi
                 case 32: return new Aes256Key(key);
             }
 
-            ThrowHelper.ThrowUnknownKeySizeException(nameof(key), key.Length); 
+            ThrowHelper.ThrowUnknownKeySizeException(nameof(key), key.Length);
             return null;
         }
     }

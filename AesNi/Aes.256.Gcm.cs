@@ -24,11 +24,11 @@ namespace AesNi
             Vector128<byte> tmp1, tmp2, tmp3, tmp4;
             Vector128<byte> h, h2, h3, h4, t;
             Vector128<byte> ctr1, ctr2, ctr3, ctr4;
-            Vector128<byte> one = One;
-            Vector128<byte> four = Four;
-            Vector128<byte> bswapEpi64 = BswapEpi64;
-            Vector128<byte> bswapMask = BswapMask;
-            Vector128<byte> x = Vector128<byte>.Zero;
+            var one = One;
+            var four = Four;
+            var bswapEpi64 = BswapEpi64;
+            var bswapMask = BswapMask;
+            var x = Vector128<byte>.Zero;
             Vector128<byte> y;
             Span<byte> lastBlock = stackalloc byte[BlockSize];
 
@@ -40,21 +40,21 @@ namespace AesNi
             ref var lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
             ref var tagRef = ref MemoryMarshal.GetReference(tag);
 
-            var key0 = ReadUnalignedOffset(ref expandedKey, Kn * 0);
-            var key1 = ReadUnalignedOffset(ref expandedKey, Kn * 1);
-            var key2 = ReadUnalignedOffset(ref expandedKey, Kn * 2);
-            var key3 = ReadUnalignedOffset(ref expandedKey, Kn * 3);
-            var key4 = ReadUnalignedOffset(ref expandedKey, Kn * 4);
-            var key5 = ReadUnalignedOffset(ref expandedKey, Kn * 5);
-            var key6 = ReadUnalignedOffset(ref expandedKey, Kn * 6);
-            var key7 = ReadUnalignedOffset(ref expandedKey, Kn * 7);
-            var key8 = ReadUnalignedOffset(ref expandedKey, Kn * 8);
-            var key9 = ReadUnalignedOffset(ref expandedKey, Kn * 9);
-            var key10 = ReadUnalignedOffset(ref expandedKey, Kn * 10);
-            var key11 = ReadUnalignedOffset(ref expandedKey, Kn * 11);
-            var key12 = ReadUnalignedOffset(ref expandedKey, Kn * 12);
-            var key13 = ReadUnalignedOffset(ref expandedKey, Kn * 13);
-            var key14 = ReadUnalignedOffset(ref expandedKey, Kn * 14);
+            var key0 = ReadUnaligned(ref expandedKey);
+            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
+            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
+            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 3));
+            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 4));
+            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 5));
+            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 6));
+            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 7));
+            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 8));
+            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 9));
+            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 10));
+            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
+            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
+            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 13));
+            var key14 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
 
             if (iv.Length == 96 / 8)
             {
@@ -93,10 +93,10 @@ namespace AesNi
 
                 tmp1 = AesIntrin.Encrypt(tmp1, key10);
                 tmp2 = AesIntrin.Encrypt(tmp2, key10);
-                
+
                 tmp1 = AesIntrin.Encrypt(tmp1, key11);
                 tmp2 = AesIntrin.Encrypt(tmp2, key11);
-                
+
                 tmp1 = AesIntrin.Encrypt(tmp1, key12);
                 tmp2 = AesIntrin.Encrypt(tmp2, key12);
 
@@ -150,7 +150,7 @@ namespace AesNi
                     y = Ghash.Gfmul(y, h);
                 }
 
-                tmp1 = Insert(tmp1.AsUInt64(), (ulong)iv.Length * 8, 0).AsByte();
+                tmp1 = Insert(tmp1.AsUInt64(), (ulong) iv.Length * 8, 0).AsByte();
                 tmp1 = Insert(tmp1.AsUInt64(), 0, 1).AsByte();
 
                 y = Xor(y, tmp1);
@@ -391,8 +391,8 @@ namespace AesNi
                 x = Ghash.Gfmul(x, h);
             }
 
-            tmp1 = Insert(tmp1.AsUInt64(), (ulong)input.Length * 8, 0).AsByte();
-            tmp1 = Insert(tmp1.AsUInt64(), (ulong)addt.Length * 8, 1).AsByte();
+            tmp1 = Insert(tmp1.AsUInt64(), (ulong) input.Length * 8, 0).AsByte();
+            tmp1 = Insert(tmp1.AsUInt64(), (ulong) addt.Length * 8, 1).AsByte();
 
             x = Xor(x, tmp1);
             x = Ghash.Gfmul(x, h);
@@ -414,11 +414,11 @@ namespace AesNi
             Vector128<byte> tmp1, tmp2, tmp3, tmp4;
             Vector128<byte> h, h2, h3, h4, t;
             Vector128<byte> ctr1, ctr2, ctr3, ctr4;
-            Vector128<byte> one = One;
-            Vector128<byte> four = Four;
-            Vector128<byte> bswapEpi64 = BswapEpi64;
-            Vector128<byte> bswapMask = BswapMask;
-            Vector128<byte> x = Vector128<byte>.Zero;
+            var one = One;
+            var four = Four;
+            var bswapEpi64 = BswapEpi64;
+            var bswapMask = BswapMask;
+            var x = Vector128<byte>.Zero;
             Vector128<byte> y;
             Span<byte> lastBlock = stackalloc byte[BlockSize];
             Span<byte> actual = stackalloc byte[BlockSize];
@@ -433,21 +433,21 @@ namespace AesNi
             ref var actualRef = ref MemoryMarshal.GetReference(actual);
             ref var expectedRef = ref MemoryMarshal.GetReference(expected);
 
-            var key0 = ReadUnalignedOffset(ref expandedKey, Kn * 0);
-            var key1 = ReadUnalignedOffset(ref expandedKey, Kn * 1);
-            var key2 = ReadUnalignedOffset(ref expandedKey, Kn * 2);
-            var key3 = ReadUnalignedOffset(ref expandedKey, Kn * 3);
-            var key4 = ReadUnalignedOffset(ref expandedKey, Kn * 4);
-            var key5 = ReadUnalignedOffset(ref expandedKey, Kn * 5);
-            var key6 = ReadUnalignedOffset(ref expandedKey, Kn * 6);
-            var key7 = ReadUnalignedOffset(ref expandedKey, Kn * 7);
-            var key8 = ReadUnalignedOffset(ref expandedKey, Kn * 8);
-            var key9 = ReadUnalignedOffset(ref expandedKey, Kn * 9);
-            var key10 = ReadUnalignedOffset(ref expandedKey, Kn * 10);
-            var key11 = ReadUnalignedOffset(ref expandedKey, Kn * 11);
-            var key12 = ReadUnalignedOffset(ref expandedKey, Kn * 12);
-            var key13 = ReadUnalignedOffset(ref expandedKey, Kn * 13);
-            var key14 = ReadUnalignedOffset(ref expandedKey, Kn * 14);
+            var key0 = ReadUnaligned(ref expandedKey);
+            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
+            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
+            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 3));
+            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 4));
+            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 5));
+            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 6));
+            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 7));
+            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 8));
+            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 9));
+            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 10));
+            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
+            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
+            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 13));
+            var key14 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
 
             if (iv.Length == 96 / 8)
             {
@@ -486,10 +486,10 @@ namespace AesNi
 
                 tmp1 = AesIntrin.Encrypt(tmp1, key10);
                 tmp2 = AesIntrin.Encrypt(tmp2, key10);
-                
+
                 tmp1 = AesIntrin.Encrypt(tmp1, key11);
                 tmp2 = AesIntrin.Encrypt(tmp2, key11);
-                
+
                 tmp1 = AesIntrin.Encrypt(tmp1, key12);
                 tmp2 = AesIntrin.Encrypt(tmp2, key12);
 
@@ -543,7 +543,7 @@ namespace AesNi
                     y = Ghash.Gfmul(y, h);
                 }
 
-                tmp1 = Insert(tmp1.AsUInt64(), (ulong)iv.Length * 8, 0).AsByte();
+                tmp1 = Insert(tmp1.AsUInt64(), (ulong) iv.Length * 8, 0).AsByte();
                 tmp1 = Insert(tmp1.AsUInt64(), 0, 1).AsByte();
 
                 y = Xor(y, tmp1);
@@ -569,7 +569,7 @@ namespace AesNi
             h2 = Ghash.Gfmul(h, h);
             h3 = Ghash.Gfmul(h, h2);
             h4 = Ghash.Gfmul(h, h3);
-            
+
             for (i = 0; i < addt.Length / 16 / 4; i++)
             {
                 tmp1 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 0));
@@ -626,7 +626,7 @@ namespace AesNi
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
             }
 
-            for (i = i * 4; i <  input.Length / 16; i++)
+            for (i = i * 4; i < input.Length / 16; i++)
             {
                 tmp1 = ReadUnalignedOffset(ref inputRef, 16 * i);
                 tmp1 = Shuffle(tmp1, bswapMask);
@@ -647,9 +647,9 @@ namespace AesNi
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
             }
-            
-            tmp1 = Insert(tmp1.AsUInt64(), (ulong)input.Length * 8, 0).AsByte();
-            tmp1 = Insert(tmp1.AsUInt64(), (ulong)addt.Length * 8, 1).AsByte();
+
+            tmp1 = Insert(tmp1.AsUInt64(), (ulong) input.Length * 8, 0).AsByte();
+            tmp1 = Insert(tmp1.AsUInt64(), (ulong) addt.Length * 8, 1).AsByte();
 
             x = Xor(x, tmp1);
             x = Ghash.Gfmul(x, h);
@@ -660,7 +660,7 @@ namespace AesNi
 
             tag.CopyTo(expected);
             actual.Slice(tag.Length).Clear();
-            
+
             if (!Equal(ReadUnaligned(ref expectedRef), ReadUnaligned(ref actualRef))) return false;
 
             ctr1 = Shuffle(y, bswapEpi64);

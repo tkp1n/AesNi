@@ -16,10 +16,12 @@ namespace AesNi
 
         private static readonly Vector128<byte> One = Vector128.Create(0, 0, 1, 0).AsByte();
         private static readonly Vector128<byte> Four = Vector128.Create(0, 0, 4, 0).AsByte();
+
         private static readonly Vector128<byte> BswapEpi64
-            = Vector128.Create((byte)7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
+            = Vector128.Create((byte) 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
+
         private static readonly Vector128<byte> BswapMask
-            = Vector128.Create((byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+            = Vector128.Create((byte) 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
         // TODO: harmonize default parameter values (e.g. paddingMode)
 
@@ -117,10 +119,10 @@ namespace AesNi
                     EncryptGcm(plaintext, ciphertext, aad, iv, tag, aes256Key);
                     return;
             }
-            
+
             ThrowHelper.ThrowNotImplementedException();
         }
-        
+
         public static void Decrypt(ReadOnlySpan<byte> ciphertext,
             Span<byte> plaintext,
             ReadOnlySpan<byte> iv,
@@ -132,7 +134,7 @@ namespace AesNi
                 ThrowHelper.ThrowNotImplementedException();
             if (cipherMode == CipherMode.CBC && iv == null)
                 ThrowHelper.ThrowArgumentNullException(nameof(iv));
-            if (paddingMode != PaddingMode.None) 
+            if (paddingMode != PaddingMode.None)
                 ThrowHelper.ThrowPaddingNotSupportedException(paddingMode);
             // TODO: correctly validate plaintext length
             if (plaintext.Length < ciphertext.Length)
