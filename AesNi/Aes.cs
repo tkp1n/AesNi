@@ -11,6 +11,7 @@ namespace AesNi
     public static partial class Aes
     {
         private const int Kn = 4;
+        private const int BytesPerRoundKey = 16;
         private const int BlockSize = 16;
 
         private static readonly Vector128<byte> One = Vector128.Create(0, 0, 1, 0).AsByte();
