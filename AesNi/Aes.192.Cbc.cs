@@ -21,6 +21,7 @@ namespace AesNi
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(plaintext);
             ref var outputRef = ref MemoryMarshal.GetReference(ciphertext);
+            ref var ivRef = ref MemoryMarshal.GetReference(iv);
 
             var left = plaintext.Length;
 
@@ -38,7 +39,7 @@ namespace AesNi
             var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
             var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
 
-            var feedback = ReadUnaligned(ref MemoryMarshal.GetReference(iv));
+            var feedback = ReadUnaligned(ref ivRef);
 
             while (left >= BlockSize)
             {
@@ -108,6 +109,7 @@ namespace AesNi
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var inputRef = ref MemoryMarshal.GetReference(ciphertext);
             ref var outputRef = ref MemoryMarshal.GetReference(plaintext);
+            ref var ivRef = ref MemoryMarshal.GetReference(iv);
 
             var left = ciphertext.Length;
 
@@ -125,7 +127,7 @@ namespace AesNi
             var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 23));
             var key12 = ReadUnaligned(ref expandedKey);
 
-            var feedback0 = ReadUnaligned(ref MemoryMarshal.GetReference(iv));
+            var feedback0 = ReadUnaligned(ref ivRef);
 
             while (left >= BlockSize * 8)
             {
