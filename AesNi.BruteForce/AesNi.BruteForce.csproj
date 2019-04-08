@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AesNi\AesNi.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AesNi.Benchmarks", "AesNi.B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AesNi.Tests", "AesNi.Tests\AesNi.Tests.csproj", "{AA4F2F29-5EE6-4596-89C8-DB41D4A75943}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AesNi.BruteForce", "AesNi.BruteForce\AesNi.BruteForce.csproj", "{33E58333-B186-4226-BB9C-FF88601EAAA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{AA4F2F29-5EE6-4596-89C8-DB41D4A75943}.Release|x64.Build.0 = Release|Any CPU
 		{AA4F2F29-5EE6-4596-89C8-DB41D4A75943}.Release|x86.ActiveCfg = Release|Any CPU
 		{AA4F2F29-5EE6-4596-89C8-DB41D4A75943}.Release|x86.Build.0 = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|x64.Build.0 = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Debug|x86.Build.0 = Debug|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|x64.ActiveCfg = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|x64.Build.0 = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|x86.ActiveCfg = Release|Any CPU
+		{33E58333-B186-4226-BB9C-FF88601EAAA7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
