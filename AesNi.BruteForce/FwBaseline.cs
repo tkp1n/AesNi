@@ -1,16 +1,26 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using AesFw = System.Security.Cryptography.Aes;
 
 namespace AesNi.BruteForce
 {
-    public class FwBaseline
+    static class FwBaseline
     {
-        static AesManaged aes = new AesManaged { BlockSize = 128, KeySize = 256, Padding = PaddingMode.Zeros };       
+        private static readonly AesFw Aes = CreateAes();       
 
-        static string Decrypt(byte[] cipherText, byte[] key, byte[] iv)
+        private static AesFw CreateAes()
         {
-            var decryptor = aes.CreateDecryptor(key, iv);
+            var aes = AesFw.Create();
+            aes.BlockSize = 128;
+            aes.KeySize = 256;
+            aes.Padding = PaddingMode.Zeros;
+            return aes;
+        }
+
+        private static string Decrypt(byte[] cipherText, byte[] key, byte[] iv)
+        {
+            var decryptor = Aes.CreateDecryptor(key, iv);
             using (var ms = new MemoryStream(cipherText))
             using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
             using (var sr = new StreamReader(cs))
@@ -24,23 +34,23 @@ namespace AesNi.BruteForce
             var key = new byte[32];
 
             for (byte a = 0; a <= 16; a++)
-                for (byte b = 0; b <= 16; b++)
-                    for (byte c = 0; c <= 16; c++)
-                        for (byte d = 0; d <= 16; d++)
-                            for (byte e = 0; e <= 16; e++)
-                                for (byte f = 0; f <= 16; f++)
-                                {
-                                    key[0] = a;
-                                    key[1] = b;
-                                    key[2] = c;
-                                    key[3] = d;
-                                    key[4] = e;
-                                    key[5] = f;
+            for (byte b = 0; b <= 16; b++)
+            for (byte c = 0; c <= 16; c++)
+            for (byte d = 0; d <= 16; d++)
+            for (byte e = 0; e <= 16; e++)
+            for (byte f = 0; f <= 16; f++)
+            {
+                key[0] = a;
+                key[1] = b;
+                key[2] = c;
+                key[3] = d;
+                key[4] = e;
+                key[5] = f;
 
-                                    var clearText = Decrypt(cipherText, key, iv);                                    
-                                    if (clearText.Contains("trust"))
-                                        return;
-                                }
+                var clearText = Decrypt(cipherText, key, iv);
+                if (clearText.Contains("trust"))
+                    return;
+            }
         }
     }
 }

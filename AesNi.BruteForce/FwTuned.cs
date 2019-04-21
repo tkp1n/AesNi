@@ -1,21 +1,30 @@
 using System;
 using System.Security.Cryptography;
-using System.Text;
+using AesFw = System.Security.Cryptography.Aes;
 
 namespace AesNi.BruteForce
 {
-    class FwTuned
+    static class FwTuned
     {
-        private static readonly AesManaged aes = new AesManaged { BlockSize = 128, KeySize = 256, Padding = PaddingMode.Zeros };       
-        private static ReadOnlySpan<byte> trust => 
+        private static readonly AesFw Aes = CreateAes();       
+        private static ReadOnlySpan<byte> Trust => 
             new byte[] {0x74, 0x72, 0x75, 0x73, 0x74};
 
+        private static AesFw CreateAes()
+        {
+            var aes = AesFw.Create();
+            aes.BlockSize = 128;
+            aes.KeySize = 256;
+            aes.Padding = PaddingMode.Zeros;
+            return aes;
+        }
+
         private static bool ContainsTrust(byte[] plaintext) =>
-            plaintext.AsSpan().IndexOf(trust) >= 0;
+            plaintext.AsSpan().IndexOf(Trust) >= 0;
 
         private static void Decrypt(byte[] cipherText, byte[] plaintext, byte[] key, byte[] iv)
         {
-            var decryptor = aes.CreateDecryptor(key, iv);
+            var decryptor = Aes.CreateDecryptor(key, iv);
             decryptor.TransformBlock(cipherText, 0, cipherText.Length, plaintext, 0);
         }
 
@@ -25,25 +34,32 @@ namespace AesNi.BruteForce
             var plaintext = new byte[cipherText.Length];
             var iv = Convert.FromBase64String("DkBbcmQo1QH+ed1wTyBynA==");
             var key = new byte[32];
+            
+            ref var a = ref key[0];
+            ref var b = ref key[1];
+            ref var c = ref key[2];
+            ref var d = ref key[3];
+            ref var e = ref key[4];
+            ref var f = ref key[5];
 
-            for (byte a = 0; a <= 16; a++)
-                for (byte b = 0; b <= 16; b++)
-                    for (byte c = 0; c <= 16; c++)
-                        for (byte d = 0; d <= 16; d++)
-                            for (byte e = 0; e <= 16; e++)
-                                for (byte f = 0; f <= 16; f++)
-                                {
-                                    key[0] = a;
-                                    key[1] = b;
-                                    key[2] = c;
-                                    key[3] = d;
-                                    key[4] = e;
-                                    key[5] = f;
+            for (a = 0; a <= 16; a++)
+            for (b = 0; b <= 16; b++)
+            for (c = 0; c <= 16; c++)
+            for (d = 0; d <= 16; d++)
+            for (e = 0; e <= 16; e++)
+            for (f = 0; f <= 16; f++)
+            {
+                key[0] = a;
+                key[1] = b;
+                key[2] = c;
+                key[3] = d;
+                key[4] = e;
+                key[5] = f;
 
-                                    Decrypt(cipherText, plaintext, key, iv);                                    
-                                    if (ContainsTrust(plaintext))
-                                        return;
-                                }
+                Decrypt(cipherText, plaintext, key, iv);
+                if (ContainsTrust(plaintext))
+                    return;
+            }
         }
-}
+    }
 }
