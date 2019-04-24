@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using static AesNi.Utils;
@@ -20,7 +21,6 @@ namespace AesNi
             Span<byte> tag,
             Aes192Key key)
         {
-            int i, j, k;
             Vector128<byte> tmp1, tmp2, tmp3, tmp4;
             Vector128<byte> h, h2, h3, h4, t;
             Vector128<byte> ctr1, ctr2, ctr3, ctr4;
@@ -40,6 +40,10 @@ namespace AesNi
             ref var lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
             ref var tagRef = ref MemoryMarshal.GetReference(tag);
 
+            int ivLeft = iv.Length;
+            var addtLeft = addt.Length;
+            var left = input.Length;
+
             var key0 = ReadUnaligned(ref expandedKey);
             var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
             var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
@@ -54,7 +58,7 @@ namespace AesNi
             var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
             var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
 
-            if (iv.Length == 96 / 8)
+            if (ivLeft == 96 / 8)
             {
                 y = ReadUnaligned(ref ivRef);
                 y = Insert(y.AsUInt32(), 0x1000000, 3).AsByte();
@@ -119,21 +123,20 @@ namespace AesNi
                 h = Shuffle(h, bswapMask);
                 y = Vector128<byte>.Zero;
 
-                for (i = 0; i < iv.Length / 16; i++)
+                while (ivLeft >= BlockSize)
                 {
-                    tmp1 = ReadUnalignedOffset(ref ivRef, i * 16);
+                    tmp1 = ReadUnaligned(ref ivRef);
                     tmp1 = Shuffle(tmp1, bswapMask);
                     y = Xor(y, tmp1);
                     y = Ghash.Gfmul(y, h);
+
+                    ivRef = ref Unsafe.AddByteOffset(ref ivRef, (IntPtr) BlockSize);
+                    ivLeft -= BlockSize;
                 }
 
-                if (iv.Length % 16 != 0)
+                if (ivLeft != 0)
                 {
-                    for (j = 0; j < iv.Length % 16; j++)
-                    {
-                        lastBlock[j] = iv[i * 16 + j];
-                    }
-
+                    iv.Slice(iv.Length - ivLeft).CopyTo(lastBlock);
                     tmp1 = ReadUnaligned(ref lastBlockRef);
                     tmp1 = Shuffle(tmp1, bswapMask);
                     y = Xor(y, tmp1);
@@ -165,12 +168,12 @@ namespace AesNi
             h3 = Ghash.Gfmul(h, h2);
             h4 = Ghash.Gfmul(h, h3);
 
-            for (i = 0; i < addt.Length / 16 / 4; i++)
+            while (addtLeft >= BlockSize * 4)
             {
-                tmp1 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 0));
-                tmp2 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 1));
-                tmp3 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 2));
-                tmp4 = ReadUnalignedOffset(ref addtRef, 16 * (i * 4 + 3));
+                tmp1 = ReadUnaligned(ref addtRef);
+                tmp2 = ReadUnalignedOffset(ref addtRef, (IntPtr) (1 * BlockSize));
+                tmp3 = ReadUnalignedOffset(ref addtRef, (IntPtr) (2 * BlockSize));
+                tmp4 = ReadUnalignedOffset(ref addtRef, (IntPtr) (3 * BlockSize));
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
@@ -179,24 +182,26 @@ namespace AesNi
                 tmp1 = Xor(x, tmp1);
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
+
+                addtRef = ref Unsafe.AddByteOffset(ref addtRef, (IntPtr) (4 * BlockSize));
+                addtLeft -= BlockSize * 4;
             }
 
-            for (i = i * 4; i < addt.Length / 16; i++)
+            while (addtLeft >= BlockSize)
             {
-                tmp1 = ReadUnalignedOffset(ref addtRef, 16 * i);
+                tmp1 = ReadUnaligned(ref addtRef);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
+
+                addtRef = ref Unsafe.AddByteOffset(ref addtRef, (IntPtr) BlockSize);
+                addtLeft -= BlockSize;
             }
 
-            if (addt.Length % 16 != 0)
+            if (addtLeft != 0)
             {
                 lastBlock.Clear();
-                for (j = 0; j < addt.Length % 16; j++)
-                {
-                    lastBlock[j] = addt[i * 16 + j];
-                }
-
+                addt.Slice(addt.Length - addtLeft).CopyTo(lastBlock);
                 tmp1 = ReadUnaligned(ref lastBlockRef);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
@@ -209,7 +214,7 @@ namespace AesNi
             ctr3 = Add(ctr2.AsUInt64(), one.AsUInt64()).AsByte();
             ctr4 = Add(ctr3.AsUInt64(), one.AsUInt64()).AsByte();
 
-            for (i = 0; i < input.Length / 16 / 4; i++)
+            while (left >= BlockSize * 4)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
                 tmp2 = Shuffle(ctr2, bswapEpi64);
@@ -286,15 +291,15 @@ namespace AesNi
                 tmp3 = AesIntrin.EncryptLast(tmp3, key12);
                 tmp4 = AesIntrin.EncryptLast(tmp4, key12);
 
-                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 0)));
-                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 1)));
-                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 2)));
-                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, 16 * (i * 4 + 3)));
+                tmp1 = Xor(tmp1, ReadUnaligned(ref inputRef));
+                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, (IntPtr) (1 * BlockSize)));
+                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, (IntPtr) (2 * BlockSize)));
+                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, (IntPtr) (3 * BlockSize)));
 
-                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 0), tmp1);
-                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 1), tmp2);
-                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 2), tmp3);
-                WriteUnalignedOffset(ref outputRef, 16 * (i * 4 + 3), tmp4);
+                WriteUnaligned(ref outputRef, tmp1);
+                WriteUnalignedOffset(ref outputRef, (IntPtr) (1 * BlockSize), tmp2);
+                WriteUnalignedOffset(ref outputRef, (IntPtr) (2 * BlockSize), tmp3);
+                WriteUnalignedOffset(ref outputRef, (IntPtr) (3 * BlockSize), tmp4);
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
@@ -304,9 +309,13 @@ namespace AesNi
                 tmp1 = Xor(x, tmp1);
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
+
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) (4 * BlockSize));
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) (4 * BlockSize));
+                left -= BlockSize * 4;
             }
 
-            for (k = i * 4; k < input.Length / 16; k++)
+            while (left >= BlockSize)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
                 ctr1 = Add(ctr1.AsUInt64(), one.AsUInt64()).AsByte();
@@ -323,15 +332,19 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key10);
                 tmp1 = AesIntrin.Encrypt(tmp1, key11);
                 tmp1 = AesIntrin.EncryptLast(tmp1, key12);
-                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
-                WriteUnalignedOffset(ref outputRef, 16 * k, tmp1);
+                tmp1 = Xor(tmp1, ReadUnaligned(ref inputRef));
+                WriteUnaligned(ref outputRef, tmp1);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
+
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) BlockSize);
+                left -= BlockSize;
             }
 
             //If remains one incomplete block
-            if (input.Length % 16 != 0)
+            if (left != 0)
             {
                 tmp1 = Shuffle(ctr1, bswapEpi64);
                 tmp1 = Xor(tmp1, key0);
@@ -347,19 +360,13 @@ namespace AesNi
                 tmp1 = AesIntrin.Encrypt(tmp1, key10);
                 tmp1 = AesIntrin.Encrypt(tmp1, key11);
                 tmp1 = AesIntrin.EncryptLast(tmp1, key12);
-                tmp1 = Xor(tmp1, ReadUnalignedOffset(ref inputRef, 16 * k));
-                WriteUnalignedOffset(ref lastBlockRef, 0, tmp1);
-                for (j = 0; j < input.Length % 16; j++)
-                {
-                    output[k * 16 + j] = lastBlock[j];
-                }
+                tmp1 = Xor(tmp1, ReadUnaligned(ref inputRef));
+                WriteUnaligned(ref lastBlockRef, tmp1);
+                // using input length here as output may be over-sized    vvvvv
+                lastBlock.Slice(0, left).CopyTo(output.Slice(input.Length - left));
+                lastBlock.Slice(left).Clear();
 
-                for (; j < 16; j++)
-                {
-                    lastBlock[j] = 0;
-                }
-
-                tmp1 = ReadUnalignedOffset(ref lastBlockRef, 0);
+                tmp1 = ReadUnaligned(ref lastBlockRef);
                 tmp1 = Shuffle(tmp1, bswapMask);
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
