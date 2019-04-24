@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
+using static AesNi.Benchmarks.TestKeys;
 
 namespace AesNi.Benchmarks
 {
-    public abstract class EncDecPerfBase : TestKeysBase
+    public abstract class EncDecPerfBase
     {
         protected  ICryptoTransform frameworkEncryptTransform;
         protected  ICryptoTransform frameworkDecryptTransform;
@@ -23,7 +24,7 @@ namespace AesNi.Benchmarks
 
         [Params(16, 1024, 1024 * 1024)] public int DataSize { get; set; }
 
-        protected  byte[] KeyBytes
+        private ReadOnlySpan<byte> KeyBytes
         {
             get
             {
@@ -37,7 +38,8 @@ namespace AesNi.Benchmarks
             }
         }
 
-        protected  AesKey AesKey => AesKey.Create(KeyBytes);
+        private AesKey AesKey => AesKey.Create(KeyBytes);
+        protected AesKey aesKey;
 
         [GlobalSetup]
         public void Setup()
@@ -53,7 +55,8 @@ namespace AesNi.Benchmarks
             r.NextBytes(iv);
 
             var aesFw = System.Security.Cryptography.Aes.Create();
-            aesFw.Key = KeyBytes;
+            aesFw.Key = new byte[KeySize/8];
+            KeyBytes.CopyTo(aesFw.Key);
             aesFw.Mode = CipherMode;
             aesFw.Padding = PaddingMode;
             aesFw.IV = iv;
