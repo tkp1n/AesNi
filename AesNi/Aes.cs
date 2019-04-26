@@ -8,6 +8,7 @@ namespace AesNi
     // https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf    
     // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf 
     // https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
+    // http://www.rksm.me/papers/rmanley-indocrypt10.pdf
     public static partial class Aes
     {
         private const int Kn = 4;

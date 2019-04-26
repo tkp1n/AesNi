@@ -40,14 +40,15 @@ namespace AesNi
             var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
 
             var feedback = ReadUnaligned(ref ivRef);
+            var block = ReadUnaligned(ref inputRef);
 
-            while (left >= BlockSize)
+            var tmp = Xor(block, key0);
+            feedback = Xor(feedback, tmp);
+
+            inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize); 
+
+            while (left >= BlockSize * 2)
             {
-                var block = ReadUnaligned(ref inputRef);
-
-                feedback = Xor(block, feedback);
-                feedback = Xor(feedback, key0);
-
                 feedback = AesIntrin.Encrypt(feedback, key1);
                 feedback = AesIntrin.Encrypt(feedback, key2);
                 feedback = AesIntrin.Encrypt(feedback, key3);
@@ -58,15 +59,40 @@ namespace AesNi
                 feedback = AesIntrin.Encrypt(feedback, key8);
                 feedback = AesIntrin.Encrypt(feedback, key9);
                 feedback = AesIntrin.Encrypt(feedback, key10);
+
+                block = ReadUnaligned(ref inputRef);
+                tmp = Xor(block, key0);
+
+                var fake = Xor(tmp, key12);
+
                 feedback = AesIntrin.Encrypt(feedback, key11);
-                feedback = AesIntrin.EncryptLast(feedback, key12);
+                feedback = AesIntrin.EncryptLast(feedback, fake);
 
-                WriteUnaligned(ref outputRef, feedback);
+                var correct = Xor(feedback, tmp);
 
-                inputRef = ref Unsafe.Add(ref inputRef, (IntPtr) BlockSize);
-                outputRef = ref Unsafe.Add(ref outputRef, (IntPtr) BlockSize);
+                WriteUnaligned(ref outputRef, correct);
+
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) BlockSize);
                 left -= BlockSize;
             }
+
+            feedback = AesIntrin.Encrypt(feedback, key1);
+            feedback = AesIntrin.Encrypt(feedback, key2);
+            feedback = AesIntrin.Encrypt(feedback, key3);
+            feedback = AesIntrin.Encrypt(feedback, key4);
+            feedback = AesIntrin.Encrypt(feedback, key5);
+            feedback = AesIntrin.Encrypt(feedback, key6);
+            feedback = AesIntrin.Encrypt(feedback, key7);
+            feedback = AesIntrin.Encrypt(feedback, key8);
+            feedback = AesIntrin.Encrypt(feedback, key9);
+            feedback = AesIntrin.Encrypt(feedback, key10);
+            feedback = AesIntrin.Encrypt(feedback, key11);
+            feedback = AesIntrin.EncryptLast(feedback, key12);
+
+            WriteUnaligned(ref outputRef, feedback);
+
+            left -= BlockSize;
 
             if (paddingMode == PaddingMode.None)
             {
@@ -308,9 +334,7 @@ namespace AesNi
                 data = AesIntrin.Decrypt(data, key9);
                 data = AesIntrin.Decrypt(data, key10);
                 data = AesIntrin.Decrypt(data, key11);
-                data = AesIntrin.DecryptLast(data, key12);
-
-                data = Xor(data, feedback0);
+                data = AesIntrin.DecryptLast(data, Xor(key12, feedback0));
 
                 WriteUnaligned(ref outputRef, data);
 

@@ -17,9 +17,6 @@ namespace AesNi.Benchmarks
         [Params(CipherMode.ECB, CipherMode.CBC)]
         public CipherMode CipherMode { get; set; }
 
-        [Params(PaddingMode.None/*, PaddingMode.Zeros, PaddingMode.PKCS7, PaddingMode.ANSIX923*/)]
-        public PaddingMode PaddingMode { get; set; }
-
         [Params(128, 192, 256)] public int KeySize { get; set; }
 
         [Params(16, 1024, 1024 * 1024)] public int DataSize { get; set; }
@@ -58,7 +55,7 @@ namespace AesNi.Benchmarks
             aesFw.Key = new byte[KeySize/8];
             KeyBytes.CopyTo(aesFw.Key);
             aesFw.Mode = CipherMode;
-            aesFw.Padding = PaddingMode;
+            aesFw.Padding = PaddingMode.None;
             aesFw.IV = iv;
             frameworkEncryptTransform = aesFw.CreateEncryptor();
             frameworkDecryptTransform = aesFw.CreateDecryptor();

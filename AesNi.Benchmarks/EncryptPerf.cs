@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 
 namespace AesNi.Benchmarks
@@ -7,7 +8,7 @@ namespace AesNi.Benchmarks
         [Benchmark]
         public void AesNi()
         {
-            Aes.Encrypt(input, output, iv, aesKey, CipherMode, PaddingMode);
+            Aes.Encrypt(input, output, iv, aesKey, CipherMode, PaddingMode.None);
         }
 
         [Benchmark(Baseline = true)]
