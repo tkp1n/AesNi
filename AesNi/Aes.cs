@@ -5,8 +5,8 @@ using System.Security.Cryptography;
 
 namespace AesNi
 {
-    // https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf    
-    // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf 
+    // https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf
+    // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
     // https://software.intel.com/sites/default/files/managed/72/cc/clmul-wp-rev-2.02-2014-04-20.pdf
     // http://www.rksm.me/papers/rmanley-indocrypt10.pdf
     public static partial class Aes
@@ -227,22 +227,24 @@ namespace AesNi
             PaddingMode paddingMode)
         {
             remainingBytes.CopyTo(lastBlock); // fill last block with remainder of message
-            var remainingBytesLength = (byte) remainingBytes.Length;
+            var paddingLength = (byte) (BlockSize - remainingBytes.Length);
 
             switch (paddingMode)
             {
                 case PaddingMode.ANSIX923: // fill with zeroes, length of padding in last byte
-                    lastBlock[BlockSize - 1] = remainingBytesLength;
+                    lastBlock.Slice(remainingBytes.Length).Fill(0);
+                    lastBlock[BlockSize - 1] = paddingLength;
                     break;
                 case PaddingMode.ISO10126: // fill with random, length of padding in last byte
                     RandomHelper.NextBytes(lastBlock.Slice(remainingBytes.Length)); // fill rest with random bytes
-                    lastBlock[BlockSize - 1] = (byte) remainingBytes.Length; // set last byte to length
+                    lastBlock[BlockSize - 1] = paddingLength; // set last byte to length
                     break;
                 case PaddingMode.PKCS7: // fill with length of padding
-                    lastBlock.Slice(remainingBytes.Length).Fill(remainingBytesLength);
+                    lastBlock.Slice(remainingBytes.Length).Fill(paddingLength);
                     break;
                 case PaddingMode.Zeros: // fill with zeroes
-                    break; // lastBlock assumed to be already zeroed out
+                    lastBlock.Slice(remainingBytes.Length).Fill(0);
+                    break;
                 default:
                     ThrowHelper.ThrowPaddingNotSupportedException(paddingMode);
                     break; // unreachable
