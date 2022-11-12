@@ -12,7 +12,7 @@ namespace AesNi
     {
         private const int NumberOfRoundKeys = 10;
 
-        // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec 
+        // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec
         // inspiration drawn from https://github.com/sebastien-riou/aes-brute-force/blob/master/include/aes_ni.h
         private readonly byte[] _expandedKey = new byte[2 * BytesPerRoundKey * NumberOfRoundKeys];
 
@@ -79,33 +79,14 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, (IntPtr) (10 * BytesPerRoundKey), tmp);
         }
 
-        // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<byte> Aes128KeyExp(Vector128<byte> key, byte rcon)
         {
             var temp = KeygenAssist(key, rcon);
             temp = Shuffle(temp.AsInt32(), 0xFF).AsByte();
-            key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
-            key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
+            key = Xor(key, ShiftLeftLogical128BitLane(key, 8));
             key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
             return Xor(key, temp);
         }
-
-        // Alternative implementation of the key expansion used in linux
-        // Below implementation is tested and working, but benched slightly worse than the above
-        // See: http://lxr.linux.no/#linux+v3.7.4/arch/x86/crypto/aesni-intel_asm.S#L1707
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static Vector128<byte> Aes128KeyExp(Vector128<byte> xmm0, byte rcon)
-        // {
-        //     Vector128<byte> xmm4 = Vector128<byte>.Zero;
-        //     Vector128<byte> xmm1 = KeygenAssist(xmm0, rcon); 
-        //     
-        //     xmm1 = Shuffle(xmm1.AsInt32(), 0xFF).AsByte();
-        //     xmm4 = System.Runtime.Intrinsics.X86.Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x10).AsByte();
-        //     xmm0 = Xor(xmm0, xmm4);
-        //     xmm4 = System.Runtime.Intrinsics.X86.Sse.Shuffle(xmm4.AsSingle(), xmm0.AsSingle(), 0x8C).AsByte();
-        //     xmm0 = Xor(xmm0, xmm4);
-        //     return Xor(xmm0, xmm1);
-        // }
     }
 }
