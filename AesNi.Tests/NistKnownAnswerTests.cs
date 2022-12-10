@@ -62,10 +62,10 @@ namespace AesNi.Tests
             }
             else
             {
-                var acutal = new byte[testSet.Plaintext.Length];
-                Aes.Decrypt(testSet.Ciphertext, acutal, testSet.Iv, AesKey.Create(testSet.Key), testSet.Mode,
+                var actual = new byte[testSet.Plaintext.Length];
+                Aes.Decrypt(testSet.Ciphertext, actual, testSet.Iv, AesKey.Create(testSet.Key), testSet.Mode,
                     PaddingMode.None);
-                Assert.Equal(testSet.Plaintext, acutal);
+                Assert.Equal(testSet.Plaintext, actual);
             }
         }
 
