@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using Xunit;
+using AesManaged = System.Security.Cryptography.Aes;
 
 namespace AesNi.Tests
 {
@@ -18,7 +19,10 @@ namespace AesNi.Tests
             r.NextBytes(bytes);
             r.NextBytes(key);
 
-            var managed = new AesManaged {Key = key, Mode = CipherMode.ECB, Padding = PaddingMode.None};
+            var managed = AesManaged.Create();
+            managed.Key = key;
+            managed.Mode = CipherMode.ECB;
+            managed.Padding = PaddingMode.None;
             var managedResult = managed.CreateEncryptor().TransformFinalBlock(bytes, 0, bytes.Length);
 
             var niResult = new byte[DataSize];
@@ -38,7 +42,11 @@ namespace AesNi.Tests
             r.NextBytes(key);
             r.NextBytes(iv);
 
-            var managed = new AesManaged {Key = key, IV = iv, Mode = CipherMode.CBC, Padding = PaddingMode.None};
+            var managed = AesManaged.Create();
+            managed.Key = key;
+            managed.IV = iv;
+            managed.Mode = CipherMode.CBC;
+            managed.Padding = PaddingMode.None;
             var managedResult = managed.CreateEncryptor().TransformFinalBlock(bytes, 0, bytes.Length);
 
             var niResult = new byte[DataSize];

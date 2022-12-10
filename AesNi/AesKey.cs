@@ -7,7 +7,7 @@ namespace AesNi
     //  second half of key expansion
     public abstract class AesKey
     {
-        protected const int BytesPerRoundKey = 16;
+        protected const nint BytesPerRoundKey = 16;
 
         internal abstract ReadOnlySpan<byte> ExpandedKey { get; }
 

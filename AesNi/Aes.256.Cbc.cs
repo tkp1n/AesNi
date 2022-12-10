@@ -26,20 +26,20 @@ namespace AesNi
             var left = plaintext.Length;
 
             var key0 = ReadUnaligned(ref expandedKey);
-            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
-            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
-            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 3));
-            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 4));
-            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 5));
-            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 6));
-            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 7));
-            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 8));
-            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 9));
-            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 10));
-            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
-            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
-            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 13));
-            var key14 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
+            var key1 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1);
+            var key2 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2);
+            var key3 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3);
+            var key4 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4);
+            var key5 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5);
+            var key6 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6);
+            var key7 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7);
+            var key8 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8);
+            var key9 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9);
+            var key10 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10);
+            var key11 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11);
+            var key12 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12);
+            var key13 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13);
+            var key14 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14);
 
             var feedback = ReadUnaligned(ref ivRef);
             var block = ReadUnaligned(ref inputRef);
@@ -47,7 +47,7 @@ namespace AesNi
             var tmp = Xor(block, key0);
             feedback = Xor(feedback, tmp);
 
-            inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize); 
+            inputRef = ref Unsafe.AddByteOffset(ref inputRef, BlockSize);
 
             while (left >= BlockSize * 2)
             {
@@ -76,9 +76,9 @@ namespace AesNi
 
                 WriteUnaligned(ref outputRef, correct);
 
-                inputRef = ref Unsafe.Add(ref inputRef, (IntPtr) BlockSize);
-                outputRef = ref Unsafe.Add(ref outputRef, (IntPtr) BlockSize);
-                left -= BlockSize;
+                inputRef = ref Unsafe.Add(ref inputRef, BlockSize);
+                outputRef = ref Unsafe.Add(ref outputRef, BlockSize);
+                left -= BlockSizeInt;
             }
 
             feedback = AesIntrin.Encrypt(feedback, key1);
@@ -98,7 +98,7 @@ namespace AesNi
 
             WriteUnaligned(ref outputRef, feedback);
 
-            left -= BlockSize;
+            left -= BlockSizeInt;
 
             if (paddingMode == PaddingMode.None)
             {
@@ -106,7 +106,7 @@ namespace AesNi
                 return;
             }
 
-            Span<byte> lastBlock = stackalloc byte[BlockSize];
+            Span<byte> lastBlock = stackalloc byte[BlockSizeInt];
             var remainingPlaintext =
                 left != 0 ? plaintext.Slice(plaintext.Length - left) : ReadOnlySpan<byte>.Empty;
 
@@ -149,20 +149,20 @@ namespace AesNi
 
             var left = ciphertext.Length;
 
-            var key0 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
-            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 15));
-            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 16));
-            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 17));
-            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 18));
-            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 19));
-            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 20));
-            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 21));
-            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 22));
-            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 23));
-            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 24));
-            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 25));
-            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 26));
-            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 27));
+            var key0 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14);
+            var key1 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 15);
+            var key2 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 16);
+            var key3 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 17);
+            var key4 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 18);
+            var key5 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 19);
+            var key6 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 20);
+            var key7 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 21);
+            var key8 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 22);
+            var key9 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 23);
+            var key10 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 24);
+            var key11 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 25);
+            var key12 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 26);
+            var key13 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 27);
             var key14 = ReadUnaligned(ref expandedKey);
 
             var feedback0 = ReadUnaligned(ref ivRef);
@@ -170,13 +170,13 @@ namespace AesNi
             while (left >= BlockSize * 8)
             {
                 var block0 = ReadUnaligned(ref inputRef);
-                var block1 = ReadUnalignedOffset(ref inputRef, (IntPtr) (1 * BlockSize));
-                var block2 = ReadUnalignedOffset(ref inputRef, (IntPtr) (2 * BlockSize));
-                var block3 = ReadUnalignedOffset(ref inputRef, (IntPtr) (3 * BlockSize));
-                var block4 = ReadUnalignedOffset(ref inputRef, (IntPtr) (4 * BlockSize));
-                var block5 = ReadUnalignedOffset(ref inputRef, (IntPtr) (5 * BlockSize));
-                var block6 = ReadUnalignedOffset(ref inputRef, (IntPtr) (6 * BlockSize));
-                var block7 = ReadUnalignedOffset(ref inputRef, (IntPtr) (7 * BlockSize));
+                var block1 = ReadUnalignedOffset(ref inputRef, 1 * BlockSize);
+                var block2 = ReadUnalignedOffset(ref inputRef, 2 * BlockSize);
+                var block3 = ReadUnalignedOffset(ref inputRef, 3 * BlockSize);
+                var block4 = ReadUnalignedOffset(ref inputRef, 4 * BlockSize);
+                var block5 = ReadUnalignedOffset(ref inputRef, 5 * BlockSize);
+                var block6 = ReadUnalignedOffset(ref inputRef, 6 * BlockSize);
+                var block7 = ReadUnalignedOffset(ref inputRef, 7 * BlockSize);
 
                 var feedback1 = block0;
                 var feedback2 = block1;
@@ -332,19 +332,19 @@ namespace AesNi
                 block7 = Xor(block7, feedback7);
 
                 WriteUnaligned(ref outputRef, block0);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (1 * BlockSize), block1);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (2 * BlockSize), block2);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (3 * BlockSize), block3);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (4 * BlockSize), block4);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (5 * BlockSize), block5);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (6 * BlockSize), block6);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (7 * BlockSize), block7);
+                WriteUnalignedOffset(ref outputRef, 1 * BlockSize, block1);
+                WriteUnalignedOffset(ref outputRef, 2 * BlockSize, block2);
+                WriteUnalignedOffset(ref outputRef, 3 * BlockSize, block3);
+                WriteUnalignedOffset(ref outputRef, 4 * BlockSize, block4);
+                WriteUnalignedOffset(ref outputRef, 5 * BlockSize, block5);
+                WriteUnalignedOffset(ref outputRef, 6 * BlockSize, block6);
+                WriteUnalignedOffset(ref outputRef, 7 * BlockSize, block7);
 
                 feedback0 = lastIn;
 
-                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) (8 * BlockSize));
-                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) (8 * BlockSize));
-                left -= BlockSize * 8;
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, 8 * BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, 8 * BlockSize);
+                left -= BlockSizeInt * 8;
             }
 
             while (left >= BlockSize)
@@ -372,9 +372,9 @@ namespace AesNi
 
                 feedback0 = lastIn;
 
-                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize);
-                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) BlockSize);
-                left -= BlockSize;
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, BlockSize);
+                left -= BlockSizeInt;
             }
         }
     }

@@ -12,8 +12,9 @@ namespace AesNi
     public static partial class Aes
     {
         private const int Kn = 4;
-        private const int BytesPerRoundKey = 16;
-        private const int BlockSize = 16;
+        private const nint BytesPerRoundKey = 16;
+        private const nint BlockSize = 16;
+        private const int BlockSizeInt = 16;
 
         private static readonly Vector128<byte> One = Vector128.Create(0, 0, 1, 0).AsByte();
         private static readonly Vector128<byte> Four = Vector128.Create(0, 0, 4, 0).AsByte();
@@ -233,11 +234,11 @@ namespace AesNi
             {
                 case PaddingMode.ANSIX923: // fill with zeroes, length of padding in last byte
                     lastBlock.Slice(remainingBytes.Length).Fill(0);
-                    lastBlock[BlockSize - 1] = paddingLength;
+                    lastBlock[BlockSizeInt - 1] = paddingLength;
                     break;
                 case PaddingMode.ISO10126: // fill with random, length of padding in last byte
                     RandomHelper.NextBytes(lastBlock.Slice(remainingBytes.Length)); // fill rest with random bytes
-                    lastBlock[BlockSize - 1] = paddingLength; // set last byte to length
+                    lastBlock[BlockSizeInt - 1] = paddingLength; // set last byte to length
                     break;
                 case PaddingMode.PKCS7: // fill with length of padding
                     lastBlock.Slice(remainingBytes.Length).Fill(paddingLength);

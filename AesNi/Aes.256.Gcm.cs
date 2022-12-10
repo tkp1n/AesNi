@@ -30,7 +30,7 @@ namespace AesNi
             var bswapMask = BswapMask;
             var x = Vector128<byte>.Zero;
             Vector128<byte> y;
-            Span<byte> lastBlock = stackalloc byte[BlockSize];
+            Span<byte> lastBlock = stackalloc byte[BlockSizeInt];
 
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var ivRef = ref MemoryMarshal.GetReference(iv);
@@ -45,20 +45,20 @@ namespace AesNi
             var left = input.Length;
 
             var key0 = ReadUnaligned(ref expandedKey);
-            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
-            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
-            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 3));
-            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 4));
-            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 5));
-            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 6));
-            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 7));
-            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 8));
-            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 9));
-            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 10));
-            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
-            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
-            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 13));
-            var key14 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
+            var key1 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1);
+            var key2 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2);
+            var key3 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3);
+            var key4 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4);
+            var key5 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5);
+            var key6 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6);
+            var key7 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7);
+            var key8 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8);
+            var key9 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9);
+            var key10 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10);
+            var key11 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11);
+            var key12 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12);
+            var key13 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13);
+            var key14 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14);
 
             if (ivLeft == 96 / 8)
             {
@@ -140,8 +140,8 @@ namespace AesNi
                     y = Xor(y, tmp1);
                     y = Ghash.Gfmul(y, h);
 
-                    ivRef = ref Unsafe.AddByteOffset(ref ivRef, (IntPtr) BlockSize);
-                    ivLeft -= BlockSize;
+                    ivRef = ref Unsafe.AddByteOffset(ref ivRef, BlockSize);
+                    ivLeft -= BlockSizeInt;
                 }
 
                 if (ivLeft != 0)
@@ -183,9 +183,9 @@ namespace AesNi
             while (addtLeft >= BlockSize * 4)
             {
                 tmp1 = ReadUnaligned(ref addtRef);
-                tmp2 = ReadUnalignedOffset(ref addtRef, (IntPtr) (1 * BlockSize));
-                tmp3 = ReadUnalignedOffset(ref addtRef, (IntPtr) (2 * BlockSize));
-                tmp4 = ReadUnalignedOffset(ref addtRef, (IntPtr) (3 * BlockSize));
+                tmp2 = ReadUnalignedOffset(ref addtRef, 1 * BlockSize);
+                tmp3 = ReadUnalignedOffset(ref addtRef, 2 * BlockSize);
+                tmp4 = ReadUnalignedOffset(ref addtRef, 3 * BlockSize);
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
@@ -195,8 +195,8 @@ namespace AesNi
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
 
-                addtRef = ref Unsafe.AddByteOffset(ref addtRef, (IntPtr) (4 * BlockSize));
-                addtLeft -= BlockSize * 4;
+                addtRef = ref Unsafe.AddByteOffset(ref addtRef, 4 * BlockSize);
+                addtLeft -= BlockSizeInt * 4;
             }
 
             while (addtLeft >= BlockSize)
@@ -206,8 +206,8 @@ namespace AesNi
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
 
-                addtRef = ref Unsafe.AddByteOffset(ref addtRef, (IntPtr) BlockSize);
-                addtLeft -= BlockSize;
+                addtRef = ref Unsafe.AddByteOffset(ref addtRef, BlockSize);
+                addtLeft -= BlockSizeInt;
             }
 
             if (addtLeft != 0)
@@ -314,14 +314,14 @@ namespace AesNi
                 tmp4 = AesIntrin.EncryptLast(tmp4, key14);
 
                 tmp1 = Xor(tmp1, ReadUnaligned(ref inputRef));
-                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, (IntPtr) (1 * BlockSize)));
-                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, (IntPtr) (2 * BlockSize)));
-                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, (IntPtr) (3 * BlockSize)));
+                tmp2 = Xor(tmp2, ReadUnalignedOffset(ref inputRef, 1 * BlockSize));
+                tmp3 = Xor(tmp3, ReadUnalignedOffset(ref inputRef, 2 * BlockSize));
+                tmp4 = Xor(tmp4, ReadUnalignedOffset(ref inputRef, 3 * BlockSize));
 
                 WriteUnaligned(ref outputRef, tmp1);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (1 * BlockSize), tmp2);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (2 * BlockSize), tmp3);
-                WriteUnalignedOffset(ref outputRef, (IntPtr) (3 * BlockSize), tmp4);
+                WriteUnalignedOffset(ref outputRef, 1 * BlockSize, tmp2);
+                WriteUnalignedOffset(ref outputRef, 2 * BlockSize, tmp3);
+                WriteUnalignedOffset(ref outputRef, 3 * BlockSize, tmp4);
 
                 tmp1 = Shuffle(tmp1, bswapMask);
                 tmp2 = Shuffle(tmp2, bswapMask);
@@ -332,9 +332,9 @@ namespace AesNi
 
                 x = Ghash.Reduce4(h, h2, h3, h4, tmp4, tmp3, tmp2, tmp1);
 
-                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) (4 * BlockSize));
-                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) (4 * BlockSize));
-                left -= BlockSize * 4;
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, 4 * BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, 4 * BlockSize);
+                left -= BlockSizeInt * 4;
             }
 
             while (left >= BlockSize)
@@ -362,9 +362,9 @@ namespace AesNi
                 x = Xor(x, tmp1);
                 x = Ghash.Gfmul(x, h);
 
-                inputRef = ref Unsafe.AddByteOffset(ref inputRef, (IntPtr) BlockSize);
-                outputRef = ref Unsafe.AddByteOffset(ref outputRef, (IntPtr) BlockSize);
-                left -= BlockSize;
+                inputRef = ref Unsafe.AddByteOffset(ref inputRef, BlockSize);
+                outputRef = ref Unsafe.AddByteOffset(ref outputRef, BlockSize);
+                left -= BlockSizeInt;
             }
 
             //If remains one incomplete block
@@ -427,9 +427,9 @@ namespace AesNi
             var bswapMask = BswapMask;
             var x = Vector128<byte>.Zero;
             Vector128<byte> y;
-            Span<byte> lastBlock = stackalloc byte[BlockSize];
-            Span<byte> actual = stackalloc byte[BlockSize];
-            Span<byte> expected = stackalloc byte[BlockSize];
+            Span<byte> lastBlock = stackalloc byte[BlockSizeInt];
+            Span<byte> actual = stackalloc byte[BlockSizeInt];
+            Span<byte> expected = stackalloc byte[BlockSizeInt];
 
             ref var expandedKey = ref MemoryMarshal.GetReference(key.ExpandedKey);
             ref var ivRef = ref MemoryMarshal.GetReference(iv);
@@ -441,20 +441,20 @@ namespace AesNi
             ref var expectedRef = ref MemoryMarshal.GetReference(expected);
 
             var key0 = ReadUnaligned(ref expandedKey);
-            var key1 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 1));
-            var key2 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 2));
-            var key3 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 3));
-            var key4 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 4));
-            var key5 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 5));
-            var key6 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 6));
-            var key7 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 7));
-            var key8 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 8));
-            var key9 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 9));
-            var key10 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 10));
-            var key11 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 11));
-            var key12 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 12));
-            var key13 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 13));
-            var key14 = ReadUnalignedOffset(ref expandedKey, (IntPtr) (BytesPerRoundKey * 14));
+            var key1 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 1);
+            var key2 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 2);
+            var key3 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 3);
+            var key4 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 4);
+            var key5 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 5);
+            var key6 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 6);
+            var key7 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 7);
+            var key8 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 8);
+            var key9 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 9);
+            var key10 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 10);
+            var key11 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 11);
+            var key12 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 12);
+            var key13 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 13);
+            var key14 = ReadUnalignedOffset(ref expandedKey, BytesPerRoundKey * 14);
 
             if (iv.Length == 96 / 8)
             {
