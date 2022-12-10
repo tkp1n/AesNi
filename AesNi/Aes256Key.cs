@@ -12,7 +12,7 @@ namespace AesNi
     {
         private const int NumberOfRoundKeys = 14;
 
-        // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec 
+        // Saving some space, as the actual key is stored only once (at [0]) and [10] is shared between enc and dec
         // inspiration drawn from https://github.com/sebastien-riou/aes-brute-force/blob/master/include/aes_ni.h
         private readonly byte[] _expandedKey = new byte[2 * BytesPerRoundKey * NumberOfRoundKeys];
 
@@ -48,7 +48,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 2 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 26 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 3 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 25 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -56,7 +56,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 4 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 24 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 5 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 23 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -64,7 +64,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 6 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 22 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 7 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 21 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -72,7 +72,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 8 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 20 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 9 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 19 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -80,7 +80,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 10 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 18 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 11 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 17 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -88,7 +88,7 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 12 * BytesPerRoundKey, tmp1);
             WriteUnalignedOffset(ref expandedKey, 16 * BytesPerRoundKey, InverseMixColumns(tmp1));
 
-            Aes256KeyExp2(tmp1, ref tmp3);
+            Aes256KeyExp2(ref tmp3, tmp1);
             WriteUnalignedOffset(ref expandedKey, 13 * BytesPerRoundKey, tmp3);
             WriteUnalignedOffset(ref expandedKey, 15 * BytesPerRoundKey, InverseMixColumns(tmp3));
 
@@ -96,34 +96,24 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 14 * BytesPerRoundKey, tmp1);
         }
 
-        // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Aes256KeyExp1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte rcon)
+        private static void Aes256KeyExp1(ref Vector128<byte> key, Vector128<byte> input, byte rcon)
         {
-            var tmp2 = KeygenAssist(tmp3, rcon);
-            tmp2 = Shuffle(tmp2.AsInt32(), 0xFF).AsByte();
-            var tmp4 = ShiftLeftLogical128BitLane(tmp1, 0x04);
-            tmp1 = Xor(tmp1, tmp4);
-            tmp4 = ShiftLeftLogical128BitLane(tmp4, 0x04);
-            tmp1 = Xor(tmp1, tmp4);
-            tmp4 = ShiftLeftLogical128BitLane(tmp4, 0x04);
-            tmp1 = Xor(tmp1, tmp4);
-            tmp1 = Xor(tmp1, tmp2);
+            var temp = KeygenAssist(input, rcon);
+            temp = Shuffle(temp.AsInt32(), 0xFF).AsByte();
+            key = Xor(key, ShiftLeftLogical128BitLane(key, 8));
+            key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
+            key = Xor(key, temp);
         }
 
-        // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Aes256KeyExp2(Vector128<byte> tmp1, ref Vector128<byte> tmp3)
+        private static void Aes256KeyExp2(ref Vector128<byte> key, Vector128<byte> input)
         {
-            var tmp4 = KeygenAssist(tmp1, 0x00);
-            var tmp2 = Shuffle(tmp4.AsInt32(), 0xAA).AsByte();
-            tmp4 = ShiftLeftLogical128BitLane(tmp3, 0x04);
-            tmp3 = Xor(tmp3, tmp4);
-            tmp4 = ShiftLeftLogical128BitLane(tmp4, 0x04);
-            tmp3 = Xor(tmp3, tmp4);
-            tmp4 = ShiftLeftLogical128BitLane(tmp4, 0x04);
-            tmp3 = Xor(tmp3, tmp4);
-            tmp3 = Xor(tmp3, tmp2);
+            var temp = KeygenAssist(input, 0x00);
+            temp = Shuffle(temp.AsInt32(), 0xAA).AsByte();
+            key = Xor(key, ShiftLeftLogical128BitLane(key, 8));
+            key = Xor(key, ShiftLeftLogical128BitLane(key, 4));
+            key = Xor(key, temp);
         }
     }
 }

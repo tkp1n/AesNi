@@ -12,7 +12,7 @@ namespace AesNi
     {
         private const int NumberOfRoundKeys = 12;
 
-        // Saving some space, as the actual key is stored only once (at [0]) and [12] is shared between enc and dec 
+        // Saving some space, as the actual key is stored only once (at [0]) and [12] is shared between enc and dec
         // inspiration drawn from https://github.com/sebastien-riou/aes-brute-force/blob/master/include/aes_ni.h
         private readonly byte[] _expandedKey = new byte[2 * BytesPerRoundKey * NumberOfRoundKeys];
 
@@ -103,14 +103,12 @@ namespace AesNi
             WriteUnalignedOffset(ref expandedKey, 12 * BytesPerRoundKey, tmp1);
         }
 
-        // https://www.intel.com/content/dam/doc/white-paper/advanced-encryption-standard-new-instructions-set-paper.pdf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector128<byte> Aes192KeyExp(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte rcon)
         {
             var tmp2 = KeygenAssist(tmp3, rcon);
             tmp2 = Shuffle(tmp2.AsInt32(), 0x55).AsByte();
-            tmp1 = Xor(tmp1, ShiftLeftLogical128BitLane(tmp1, 4));
-            tmp1 = Xor(tmp1, ShiftLeftLogical128BitLane(tmp1, 4));
+            tmp1 = Xor(tmp1, ShiftLeftLogical128BitLane(tmp1, 8));
             tmp1 = Xor(tmp1, ShiftLeftLogical128BitLane(tmp1, 4));
             tmp1 = Xor(tmp1, tmp2);
             tmp2 = Shuffle(tmp1.AsInt32(), 0xFF).AsByte();
@@ -119,7 +117,7 @@ namespace AesNi
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> Shufpd(Vector128<byte> left, Vector128<byte> right, byte control) 
+        private static Vector128<byte> Shufpd(Vector128<byte> left, Vector128<byte> right, byte control)
             => Shuffle(left.AsDouble(), right.AsDouble(), control).AsByte();
     }
 }
